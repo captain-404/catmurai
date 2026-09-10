@@ -2,7 +2,7 @@
 
 | ID | Format / hook | Footage | Status |
 |---|---|---|---|
-| S01 | AI built this samurai cat game | Open with strongest live combat; 2s context; attack payoff; next boss tease | Capture first-cycle sample; editing pending |
+| S01 | AI built this samurai cat game | Open with strongest live combat; 2s context; attack payoff; next boss tease | 24-second vertical edit ready for review; not published |
 | S02 | One cat. Three weapon styles. | Same enemy / camera, katana → axe → dual → greatsword | Existing assets; capture pending |
 | S03 | Can AI make a boss attack you can actually dodge? | Telegraph, dodge, hit, victory | Capture pending |
 | L01 | I Asked AI to Build My Game | Result → existing prototype → real problem → fix → test → next ultimate | Outline ready; substantial footage/voice/edit pending |
@@ -16,4 +16,8 @@ Capture folder: content/raw/YYYY-MM-DD_feature-name/. Keep before/final clips, s
 First experiment: change the opening hook only across comparable combat Shorts. Compare viewed/swiped and retention after comparable elapsed periods. Repeat clear winners quickly; small samples are inconclusive.
 
 First capture saved and decoded (25.57s); final take follows in the same raw folder. Automatic local saving now replaces manual filing when the Node server runs. Save clip is the fallback. The recorder stops on hidden tab or after 60s. Clips still need an editorial pass; no upload is claimed.
+
+
+## S01 prepared — 2026-09-10
+Angle: AI helped build a samurai cat game, but scenery obscures the boss fight. Package: D:\YoutubeChannel\output\shorts\s01-tree-wins. Includes catmurai-short-01.mp4, thumbnail.jpg, subtitles.srt, UPLOAD_COPY.md, QA.md and edit-manifest.json. Existing gameplay, local synthetic narration, existing procedural music. Full decode and contact-sheet checks passed. Publication and metrics remain pending.
 
