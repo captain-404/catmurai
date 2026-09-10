@@ -1,0 +1,3 @@
+content/raw/**/*.webm
+content/raw/**/*.mp4
+node_modules/

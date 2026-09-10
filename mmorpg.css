@@ -4,3 +4,6 @@
 .weapon-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.weapon-grid article{padding:12px;background:#12212e;border:1px solid #455366;border-radius:6px}.weapon-grid h3{margin:0 0 8px}.weapon-grid p{font-size:13px}.weapon-grid button:disabled{opacity:.45;cursor:default}@media(max-width:600px){.weapon-grid{grid-template-columns:1fr}}#modal{max-height:85vh;overflow-y:auto}
 #modal:has(.weapon-grid){width:min(760px,92vw);max-width:92vw}.weapon-grid article{display:flex;flex-direction:column}.weapon-grid article button{margin-top:auto}
 .trial-card{padding:12px;margin:12px 0;border:1px solid #5f5871;background:#142132}.trial-card p{font-size:13px}#modal:has(.trial-card){width:min(720px,92vw);max-width:92vw}
+
+/* Boss health occupies the zone-title area during trials. */
+#hud.in-trial .zone { visibility: hidden; }

@@ -63,3 +63,9 @@ Armory: Kaji the Bladesmith stands beside the shrine at (155, 60). Press V nearb
 Weapon classes: Crimson Battle Axe (level 5, 620 gold), Twin Crescent Swords (level 6, 720 gold), and Eclipse Greatblade (level 8, 900 gold) now use their own illustrated idle, walk, wind-up, strike, recovery, and casting poses. Axe basics impact at 0.56s / 1.30s cadence; dual basics hit at 0.28s and 0.47s for half damage each / 0.88s cadence; greatsword basics impact at 0.65s / 1.50s cadence. All use existing skills with class poses, mirrored facing, and weapon-attached enchantment. The short frame loops are sprite animation, not skeletal 3D. Existing Eclipse ownership and enchantments are retained. Read-only visual gallery: /weapon-class-review.html.
 
 Boss trials: press B at the shrine for Awakened Hollow Fang (level 4), Broken Moon (7), or Stormforged (10). Each has telegraphed hazards and a 50% enrage phase. First clears grant an exclusive +4 weapon, 500 gold, 300 XP and 3 seals; repeat clears grant 100 gold, 100 XP and 1 seal. Spend 3 seals for +1 equipped enchantment. Health scales at entry with current attack strength. Trials disable auto-farm; death or leaving the arena resets the fight without rewards. Existing story Hollow Fang quest is separate. Records, relic ownership and seals save locally. Art uses existing animated NPC archetypes.
+
+## Production capture
+Press C or Record gameplay after entering the vale. Stop and select Save clip to download a silent 30 FPS WebM of the game canvas (no HUD/audio). Recording stops at 60 seconds or when the tab is hidden. File clips under content/raw/YYYY-MM-DD_feature-name/. See docs/MASTER_PLAN.md and docs/AI_HANDOFF.md for production work.
+
+
+With the local Node server, completed recordings save automatically under content/raw/YYYY-MM-DD_gameplay/. Open saved clip previews the result. If saving fails, Save clip downloads the retained recording. The server remains bound to 127.0.0.1.
