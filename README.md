@@ -69,3 +69,7 @@ Press C or Record gameplay after entering the vale. Stop and select Save clip to
 
 
 With the local Node server, completed recordings save automatically under content/raw/YYYY-MM-DD_gameplay/. Open saved clip previews the result. If saving fails, Save clip downloads the retained recording. The server remains bound to 127.0.0.1.
+
+## Canonical repository
+Source and shared production documentation: https://github.com/captain-404/catmurai. Use separate codex/ and claude/ feature branches; review important features before merging. Raw gameplay captures remain local.
+

@@ -10,3 +10,6 @@
 
 - Added same-origin loopback saving to avoid unreliable browser downloads. Raw clips stay out of Git; capture notes remain tracked. Captures do not leave the machine.
 
+
+- Canonical code remote: https://github.com/captain-404/catmurai (origin). Keep game code and shared production documents synced here. Preserve the initial GitHub commit; raw video remains local and ignored.
+
