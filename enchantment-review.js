@@ -1,0 +1,4 @@
+/* Read-only showcase: no player stats or save data are changed. */
+running=true;motion.preview='idle';motion.paused=true;document.querySelector('#start').style.display='none';document.querySelector('#hud').style.display='none';
+const liveEnchant=drawWeaponEnchant;let reviewLevel=0;drawWeaponEnchant=function(sheet,frame,anchor,foot,scale){liveEnchant(sheet,frame,anchor,foot,scale,reviewLevel,performance.now()/1000)};
+draw=function(){ctx.fillStyle='#132333';ctx.fillRect(0,0,W,H);text('CATMURAI · ENCHANTMENT GLOW',W/2,28,'#ead4ab',18);const levels=[0,3,6,9,12,20],cw=W/6,ch=(H-65)/2;for(let row=0;row<2;row++)for(let col=0;col<6;col++){reviewLevel=levels[col];let x=(col+.5)*cw,y=55+(row+1)*ch-42;ctx.save();ctx.translate(x,y);const z=Math.min(cw/240,(ch-30)/225);ctx.scale(z,z);drawPose(row?'attack':'idle',row?(performance.now()/1000)%.72:0,0,0,col%2?-1:1);ctx.restore();const e=enchantStyle(reviewLevel);text('+'+reviewLevel+' · '+e.name,x,y+23,e.color,12)}};
