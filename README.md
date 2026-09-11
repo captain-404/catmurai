@@ -73,3 +73,9 @@ With the local Node server, completed recordings save automatically under conten
 ## Canonical repository
 Source and shared production documentation: https://github.com/captain-404/catmurai. Use separate codex/ and claude/ feature branches; review important features before merging. Raw gameplay captures remain local.
 
+
+Shadow Ascension [5]: 40 spirit, 15-second transformation, 60-second cooldown.
+Dedicated shadow katana appearance retains equipped weapon statistics and enchantment.
+Violet eyes, rune, animated shadow-cat aura, and +25% damage. Dialogs and animation
+review pause the duration. Expiring during an attack finishes that animation before
+restoring the normal form; the damage bonus ends at 15 seconds. Defeat ends the form.

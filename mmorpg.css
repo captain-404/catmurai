@@ -7,3 +7,4 @@
 
 /* Boss health occupies the zone-title area during trials. */
 #hud.in-trial .zone { visibility: hidden; }
+#shadowAbility{background:radial-gradient(at 30% 20%,#793ba5,#1e1235 75%)}#shadowAbility b{display:block;width:42px;height:40px;margin:auto}#shadowAbility em{display:block;position:absolute;inset:16px 0 auto;height:auto;background:#160826b8;color:#f2d7ff;font:bold 13px Segoe UI;line-height:22px;pointer-events:none}#shadowAbility em:empty{display:none}#shadowAbility:disabled{opacity:.85}#shadowAbility[aria-pressed=true]{box-shadow:0 0 17px #a949dd,inset 0 0 0 2px #462262}

@@ -1,0 +1,5 @@
+// Isolated review: never writes the adventure save.
+save=()=>{};
+const reviewBanner=document.createElement('div');reviewBanner.style.cssText='position:fixed;top:10px;left:20px;z-index:50;color:#efcfff;background:#160d28;padding:12px;border:1px solid #a260d9';reviewBanner.textContent='SHADOW REVIEW · save disabled · press 5 to transform';document.body.append(reviewBanner);
+p.mp=80;$('#play').click();
+const gallery=document.createElement('button');gallery.textContent='Review all shadow poses';reviewBanner.append(gallery);gallery.onclick=()=>{shadow.active=true;shadow.elapsed=Math.max(1,shadow.elapsed);motion.preview='idle';$('#hud').classList.add('hidden');const original=draw;draw=function(){ctx.fillStyle='#111523';ctx.fillRect(0,0,W,H);const samples=[['idle',0],['walk',0],['walk',.21],['attack',.25],['attack',.37],['attack',.52],['attack',.69],['guard',.5]];samples.forEach(([state,t],i)=>{const x=(i%4+.5)*W/4,y=(Math.floor(i/4)+1)*H/2-20;drawPose(state,t,x,y,i%2?-1:1);text(state+' · '+shadowFrame(state,t),x,y+15,'#efcaff',13)})};gallery.disabled=true};

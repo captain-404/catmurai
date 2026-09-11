@@ -3,7 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {randomUUID} = require('node:crypto');
 const root = __dirname;
-const origin = 'http://127.0.0.1:4173';
+const port = Number(process.env.PORT || 4173);
+const origin = 'http://127.0.0.1:' + port;
 http.createServer((req, res) => {
   const reply = (code, message) => { res.writeHead(code); res.end(message); };
   if (req.method === 'POST' && req.url === '/api/captures') {
@@ -44,4 +45,4 @@ http.createServer((req, res) => {
     res.setHeader('Content-Length', data.length);
     res.end(req.method === 'HEAD' ? undefined : data);
   });
-}).listen(4173, '127.0.0.1', () => console.log('Catmurai: ' + origin));
+}).listen(port, '127.0.0.1', () => console.log('Catmurai: ' + origin));

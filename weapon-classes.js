@@ -29,7 +29,23 @@ const CLASS_EDGES=[
  [[[83,667,35,700],[180,667,217,695]],[[368,669,404,688],[432,668,478,689]],[[610,670,642,691],[687,666,733,685]],[[847,555,891,528],[955,666,998,687]],[[173,879,247,854]],[[446,870,516,843],[320,888,274,904]],[[586,905,535,931],[694,901,750,929]],[[817,876,781,850],[963,875,998,846]]],
  [[[141,1159,223,1214]],[[401,1164,481,1213]],[[661,1164,748,1213]],[[876,1034,827,1001]],[[135,1388,266,1401]],[[418,1395,514,1447]],[[675,1405,749,1461]],[[854,1393,1000,1393]]]
 ];
-const swordPose=drawPose;drawPose=function(state,elapsed,x,y,face=1,opacity=1){const type=weaponClass(),r=CLASS_PROFILES[type].row;if(r===undefined||classFrames[r]?.length!==8)return swordPose(state,elapsed,x,y,face,opacity);const col=classFrame(state,elapsed,type),f=classFrames[r][col],scale=1.05;ctx.save();ctx.globalAlpha*=opacity;ctx.translate(x,y);ctx.scale(face,1);if(state==='idle')ctx.scale(1,1+Math.sin(elapsed*3)*.005);if(state==='walk')ctx.translate(0,-Math.abs(Math.sin(elapsed*10))*2);if(state==='hurt')ctx.translate(-Math.sin(elapsed*10)*8,0);if(state==='death')ctx.rotate(-Math.min(1,elapsed/1.25)*1.45);ctx.drawImage(f.tile,-f.anchor*scale,-f.foot*scale,f.tile.width*scale,f.tile.height*scale);for(const edge of CLASS_EDGES[r][col]){BLADE_POSES.classWeapon=[edge.map((v,i)=>v-(i%2?f.sy:f.sx))];armoryGlow('classWeapon',0,f.anchor,f.foot,scale)}ctx.restore()};
+// Continuous weight shifts preserve the hand-to-weapon relationship of each pose.
+function weaponWeight(state,t,type){
+ const c=CLASS_PROFILES[type],heavy=type==='dual'?.45:type==='greatsword'?1.2:1;
+ if(state==='walk'){const phase=t*Math.PI*2/.8;return {x:Math.sin(phase)*1.8,y:-Math.abs(Math.sin(phase))*2.5,angle:Math.sin(phase)*.012}}
+ if(!['attack','moon','whirl'].includes(state))return {x:0,y:0,angle:0};
+ const impact=c.impact+(state==='moon'?.08:0),duration=c.duration+(state==='moon'?.16:state==='whirl'?.25:0);
+ if(t<impact-.08){const u=Math.max(0,t/(impact-.08)),ease=u*u*(3-2*u);return {x:-5*heavy*ease,y:0,angle:.025*heavy*ease}}
+ if(t<impact+.03){const u=Math.max(0,Math.min(1,(t-impact+.08)/.11)),ease=u*u*(3-2*u);return {x:(-5+14*ease)*heavy,y:0,angle:(.025-.06*ease)*heavy}}
+ const u=Math.min(1,Math.max(0,(t-impact-.03)/(duration-impact-.03))),settle=(1-u)*(1-u);return {x:9*heavy*settle,y:0,angle:-.035*heavy*settle}
+}
+function weaponContactTrail(type,state,t,edge,f,scale){
+ if(!['attack','moon','whirl'].includes(state))return;const c=CLASS_PROFILES[type],at=c.impact+(state==='moon'?.08:0);let age=t-at;if(type==='dual'&&t>=at+(c.second-c.impact))age=t-at-(c.second-c.impact);if(age<0||age>.2)return;
+ const [ax,ay,bx,by]=edge.map((v,i)=>(v-(i%2?f.sy+f.foot:f.sx+f.anchor))*scale);
+ ctx.save();ctx.globalAlpha*=Math.sin(Math.PI*age/.2)*.65;ctx.globalCompositeOperation='screen';ctx.strokeStyle=type==='axe'?'#ffb678':type==='dual'?'#aeeaff':'#e5cbff';ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=9;ctx.lineCap='round';
+ for(let j=1;j<=3;j++){ctx.lineWidth=4-j;ctx.beginPath();ctx.moveTo(ax,ay+j*3);ctx.quadraticCurveTo((ax+bx)/2, (ay+by)/2+j*8,bx,by+j*5);ctx.stroke()}ctx.restore();
+}
+const swordPose=drawPose;drawPose=function(state,elapsed,x,y,face=1,opacity=1){const type=weaponClass(),r=CLASS_PROFILES[type].row;if(r===undefined||classFrames[r]?.length!==8)return swordPose(state,elapsed,x,y,face,opacity);const col=classFrame(state,elapsed,type),f=classFrames[r][col],scale=1.05;ctx.save();ctx.globalAlpha*=opacity;ctx.translate(x,y);ctx.scale(face,1);if(state==='idle')ctx.scale(1,1+Math.sin(elapsed*1.8)*.003);const weight=weaponWeight(state,elapsed,type);ctx.translate(weight.x,weight.y);ctx.rotate(weight.angle);if(state==='hurt')ctx.translate(-Math.sin(elapsed*10)*8,0);if(state==='death')ctx.rotate(-Math.min(1,elapsed/1.25)*1.45);ctx.drawImage(f.tile,-f.anchor*scale,-f.foot*scale,f.tile.width*scale,f.tile.height*scale);for(const edge of CLASS_EDGES[r][col]){BLADE_POSES.classWeapon=[edge.map((v,i)=>v-(i%2?f.sy:f.sx))];armoryGlow('classWeapon',0,f.anchor,f.foot,scale);weaponContactTrail(type,state,elapsed,edge,f,scale)}ctx.restore()};
 
 
 

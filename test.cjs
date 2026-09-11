@@ -89,3 +89,26 @@ const originalQuestBoss=motionRun('p.boss');motionRun('claimBossReward(trial.foe
 console.log('PASS: trial gating, ring/lane dodge geometry, enrage, damage, exclusive/ repeat rewards, seals, quest isolation, retreat cleanup');
 for(const type of ['axe','dual','greatsword']){for(let t=0;t<2;t+=.03)assert.ok([1,2].includes(motionRun(`classFrame('walk',${t},'${type}')`)));assert.equal(motionRun(`classFrame('guard',0,'${type}')`),0);assert.equal(motionRun(`classFrame('guard',.5,'${type}')`),7);assert.equal(motionRun(`classFrame('guard',1,'${type}')`),6)}
 console.log('PASS: walking excludes standing pose; casting enters and recovers; shared timeline retains contact timing');
+vm.runInContext(fs.readFileSync('shadow.js','utf8').split('const shadowFrames=')[0],visualSandbox);
+motionRun("running=true;motion.preview=null;motion.state='idle';motion.elapsed=0;shadow.ready=true;p.mp=80;p.hp=maxhp();p.equippedWeapon='axe';p.armory.axe=3;p.weapon=3");
+const beforeArmory=motionRun('JSON.stringify(p.armory)'),beforeDamage=motionRun('weaponDamage(100)');
+assert.equal(motionRun('ascendShadow()'),true);assert.equal(motionRun('p.mp'),40);assert.equal(motionRun('weaponClass()'),'sword');assert.equal(motionRun('weaponDamage(100)'),Math.round(beforeDamage*1.25));assert.equal(motionRun('ascendShadow()'),false);assert.equal(motionRun('p.mp'),40);
+motionRun("motion.state='idle';tickShadow(15)");assert.equal(motionRun('shadow.active'),false);assert.equal(motionRun('weaponClass()'),'axe');assert.equal(motionRun('p.weapon'),3);assert.equal(motionRun('JSON.stringify(p.armory)'),beforeArmory);assert.equal(motionRun('shadow.cooldown'),45);assert.equal(motionRun('ascendShadow()'),false);
+motionRun('tickShadow(45);p.mp=39');assert.equal(motionRun('ascendShadow()'),false);motionRun("p.mp=80;ascendShadow();tickShadow(.1,true)");assert.equal(motionRun('shadow.active'),false);assert.equal(motionRun('weaponDamage(100)'),beforeDamage);
+console.log('PASS: Shadow Ascension cost, duplicate cast prevention, bonus, duration, cooldown, equipment restoration, insufficient spirit, defeat cleanup');
+vm.runInContext(fs.readFileSync('shadow.js','utf8').split('function shadowFrame')[1].split('function shadowSpirit')[0].replace(/^/, 'function shadowFrame'),visualSandbox);
+for(const state of ['idle','walk','attack','moon','whirl','mend','guard','hurt','death','potion'])for(let t=0;t<2;t+=.017)assert.ok(motionRun(`shadowFrame('${state}',${t})`)>=0&&motionRun(`shadowFrame('${state}',${t})`)<8);
+motionRun("shadow.active=true;shadow.remaining=.01;motion.state='attack';motion.elapsed=0;tickShadow(.02)");assert.equal(motionRun('shadow.active'),true);assert.equal(motionRun('weaponDamage(100)'),beforeDamage);motionRun("motion.state='idle';tickShadow(.01)");assert.equal(motionRun('shadow.active'),false);
+console.log('PASS: all shadow animation states use valid poses; expiry finishes attacks without extending damage bonus');
+vm.runInContext(fs.readFileSync('weapon-classes.js','utf8').split('function weaponWeight')[1].split('function weaponContactTrail')[0].replace(/^/,'function weaponWeight'),visualSandbox);
+for(const type of ['axe','dual','greatsword'])for(const state of ['walk','attack','moon','whirl']){let previous=null;for(let t=0;t<2;t+=.001){const pose=motionRun(`weaponWeight('${state}',${t},'${type}')`);assert.ok(Number.isFinite(pose.x)&&Number.isFinite(pose.angle));if(previous)assert.ok(Math.abs(pose.x-previous.x)<.4,'Continuous weight shift');previous=pose}}
+console.log('PASS: weapon weight curves remain finite and continuous through contact and recovery');
+vm.runInContext(fs.readFileSync('weapon-travel.js','utf8').match(/function travelFrame\(t\)\{[^}]+\}/)[0],visualSandbox);
+for(let i=0;i<8;i++)assert.equal(motionRun(`travelFrame(${i*.1+.000001})`),[0,1,3,2,4,5,7,6][i]);assert.equal(motionRun('travelFrame(.8)'),0);assert.equal(motionRun('travelFrame(0)'),0);
+console.log('PASS: dedicated travel cycle visits all eight frames and loops at a fixed travel distance');
+vm.runInContext(fs.readFileSync('locomotion.js','utf8'),visualSandbox);
+const smoothResults=[];for(const fps of [30,60,120]){let v=0;for(let i=0;i<fps;i++)v=motionRun(`locomotionEase(${v},1,${1/fps})`);smoothResults.push(v)}assert.ok(Math.max(...smoothResults)-Math.min(...smoothResults)<1e-10);
+motionRun("var gaitTest={state:'idle',elapsed:1,blend:1,lean:0,previous:null};advanceLocomotion(gaitTest,'walk',.1,2,.016)");assert.equal(motionRun('gaitTest.previous.state'),'idle');motionRun("advanceLocomotion(gaitTest,'attack',0,0,.016)");assert.equal(motionRun('gaitTest.previous'),null);assert.equal(motionRun('gaitTest.blend'),1);motionRun("advanceLocomotion(gaitTest,'idle',0,0,.2)");assert.equal(motionRun('gaitTest.previous'),null);
+console.log('PASS: frame-rate independent locomotion settling; idle/walk blends; skill transitions bypass blending');
+for(let x=-1800;x<=1800;x+=37){assert.equal(motionRun(`dryGround(${x},streamY(${x}))`),false);assert.equal(motionRun(`dryGround(${x},streamY(${x})+160,45)`),true);assert.equal(motionRun(`inStream(${x},streamY(${x})+69)`),true)}
+console.log('PASS: river channel and scenery clearance remain consistent along the full river');

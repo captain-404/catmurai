@@ -1,0 +1,3 @@
+save=()=>{};running=true;motion.preview='idle';motion.paused=true;$('#start').classList.add('hidden');$('#hud').classList.add('hidden');
+const terrainPanel=document.createElement('div');terrainPanel.style.cssText='position:fixed;top:12px;left:12px;background:#13242eee;color:#ead8ae;padding:12px;z-index:50';terrainPanel.textContent='Terrain review · save disabled ';document.body.append(terrainPanel);
+for(const [label,x,y] of [['Bridge',-1400,510],['Shrine riverbank',0,430],['Eastern river',1000,475]]){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{cam.x=x;cam.y=y};terrainPanel.append(b)}cam.x=-1400;cam.y=510;
