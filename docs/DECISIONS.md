@@ -13,3 +13,5 @@
 
 - Canonical code remote: https://github.com/captain-404/catmurai (origin). Keep game code and shared production documents synced here. Preserve the initial GitHub commit; raw video remains local and ignored.
 
+
+- 2026-09-10: User selected D:\YoutubeChannel as the shared local channel root for Codex and Claude. Active game checkout: D:\YoutubeChannel\catmurai. Former OneDrive copies are backups; GitHub origin is unchanged.

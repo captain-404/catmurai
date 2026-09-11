@@ -24,3 +24,6 @@ Do not duplicate combat/recorder implementation. No independent Claude audit has
 - Captures omit DOM HUD/dialogue, so raw before/after gameplay clips alone do not demonstrate the HUD fix. The browser screenshot comparison does.
 - Actual browser blockers remain visible terrain occluding combat and unverified low-level balance. Do not regenerate scenery; review occlusion/draw ordering first.
 - Claude assignment remains ready, not dispatched. No video published. No analytics collected.
+
+## Shared workspace relocation
+Continue in D:\YoutubeChannel\catmurai. Channel pipeline and exports are in the parent D:\YoutubeChannel. Root AGENTS.md and CLAUDE.md explain layout and ownership. Former OneDrive copies are backups. Files were SHA256-verified on copy; Git history and origin preserved.
