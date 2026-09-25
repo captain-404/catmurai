@@ -27,3 +27,14 @@ Do not duplicate combat/recorder implementation. No independent Claude audit has
 
 ## Shared workspace relocation
 Continue in D:\YoutubeChannel\catmurai. Channel pipeline and exports are in the parent D:\YoutubeChannel. Root AGENTS.md and CLAUDE.md explain layout and ownership. Former OneDrive copies are backups. Files were SHA256-verified on copy; Git history and origin preserved.
+
+## Claude first cycle — 2026-09-10
+
+Claimed and completed items 1, 3 (report only, pending route data), and 4 of the assignment above; findings in docs/CLAUDE_SLICE_AUDIT.md. Read source directly (game.js, visuals.js, world.js, capture.js, server.cjs, test.cjs, index.html script order), not just docs.
+
+- Item 1 (three highest-impact findings): confirmed the occlusion bug is real and undocumented-vs-code (README claims a tree fade that doesn't exist in the codebase; grepped `fade` across all .js files); flagged that cross-module wiring (talents, weapon-classes, bosses, mmorpg) is entirely duck-typed via `typeof` checks with no registration step, so a dropped script or renamed function fails silently; confirmed fresh-player balance is genuinely unverified, not something to guess from static numbers.
+- Item 4 (capture.js/server.cjs diff review): lifecycle, unsupported-browser path, hidden-tab handling, and resource cleanup all check out against the ask. One narrow gap found and reported: `beforeunload` doesn't cover the brief async-save window right after recording stops, so closing the tab in that window can silently lose a clip. Server-side capture endpoint and static file serving both look correct (origin/MIME checks, streamed 100MB cap, server-generated filenames, dotfile blocking).
+- Item 3: route/balance report body not started — depends on item 2's timing data. Captain NPC interaction spec not started yet either; queued to follow the route report.
+- Item 2 (fresh-save timed route): NOT started. Needs a save/profile isolated from the user's existing browser save before it can run — flagging this constraint to the user rather than guessing around it.
+
+Did not touch capture.js, server.cjs, or any file Codex owns this cycle. No duplication of the recorder.

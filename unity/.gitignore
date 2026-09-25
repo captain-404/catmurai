@@ -1,0 +1,42 @@
+# Unity generated / local-only — do not commit
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+.vs/
+.vscode/
+*.csproj
+*.sln
+*.slnx
+*.unityproj
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+sysinfo.txt
+crashlytics-build.properties
+
+# Never ignore these — Unity project-critical text/config files
+!/ProjectSettings/
+!/Packages/manifest.json
+!/Packages/packages-lock.json
+
+# Third-party Asset Store pack (licensed, not redistributable) - install locally from the Asset Store
+/Assets/FlipGameDev/
+/Assets/FlipGameDev.meta
+
+# Local manual backups
+/Backup_*/
+/AnimBackup_*/
+/ModelBackup_*/
