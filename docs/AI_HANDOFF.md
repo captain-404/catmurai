@@ -34,3 +34,9 @@ Continue in D:\YoutubeChannel\catmurai. Channel pipeline and exports are in the 
 Owner: Codex; branch `codex/catmurai-v10-moves`. Imported the supplied v10 rig, textures, four LODs and nine clips under `unreal/Content/Characters/CatmuraiV10`. Ported movement, jump/flip, dash, delayed slash, face and bounded secondary motion. Enforced the handoff's non-negotiable bind wrist/weapon rotation rule; source translation keys are preserved. Existing survival systems and old assets remain. No Unity or shared plan changes.
 
 Editor build, saved-asset reopen, rendered v10 checks and survival regression passed. Review: `unreal/docs/CATMURAI_V10_IMPORT.md` and `unreal/docs/v10-review/index.html`. Native animation graph replaces the requested editable Blueprint representation; springs have no body collision. Physical gamepad and full balance playthrough remain unverified. No independent Claude review is claimed.
+
+## Codex Bleep enemies — 2026-09-27
+
+Owner: Codex; branch `codex/bleep-enemies`. Replaced all survival enemy visuals and the elite with the exact refined Bleep blend's static mesh and packed textures. Three authored LODs, original profile sizes/stats/AI, and primitive fallback are preserved. No animation added. Canonical project installed with a previous-source/binary backup.
+
+Editor build, BLEEP_IMPORT_PASS, rendered BLEEP_RUNTIME_PASS, canonical file hashes and canonical CATMURAI_SMOKE_PASS passed. Inspected the four-variant screenshot and corrected export facing. See `unreal/docs/BLEEP_ENEMIES.md`; screenshot at canonical `Saved/BleepReview/bleep-enemies.png`. No independent Claude review or new GitHub upload is claimed.

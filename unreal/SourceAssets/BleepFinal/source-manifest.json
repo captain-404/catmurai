@@ -1,0 +1,42 @@
+{
+  "source": "C:\\Users\\Paran\\OneDrive\\Documents\\ChatGPT\\Catmurai game\\artifacts\\bleep-refined\\Bleep-Final\\Bleep_Final.blend",
+  "source_sha256": "48523b3e5d8c6be48825d1171e93c796780d36976bd94231b20491ce11ea45ea",
+  "lods": [
+    {
+      "lod": 0,
+      "triangles": 65000,
+      "dimensions_m": [
+        0.8847624063491821,
+        0.7458232641220093,
+        0.9976168274879456
+      ],
+      "materials": [
+        "Bleep_Final_PBR_LOD0"
+      ]
+    },
+    {
+      "lod": 1,
+      "triangles": 25000,
+      "dimensions_m": [
+        0.8850486278533936,
+        0.7457658052444458,
+        0.9976283311843872
+      ],
+      "materials": [
+        "Bleep_Final_PBR_LOD1"
+      ]
+    },
+    {
+      "lod": 2,
+      "triangles": 8000,
+      "dimensions_m": [
+        0.886444628238678,
+        0.7458484172821045,
+        0.9968873262405396
+      ],
+      "materials": [
+        "Bleep_Final_PBR_LOD2"
+      ]
+    }
+  ]
+}

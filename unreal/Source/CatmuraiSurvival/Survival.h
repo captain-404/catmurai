@@ -132,6 +132,7 @@ UCLASS() class CATMURAISURVIVAL_API ASurvivalEnemy : public AActor {
  GENERATED_BODY()
 public:
  ASurvivalEnemy();
+ UPROPERTY() TObjectPtr<class UStaticMesh> BleepMesh;
  UPROPERTY(VisibleAnywhere) TObjectPtr<UStaticMeshComponent> Body;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UHealthComponent> Health;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) FEnemySpec Spec;
@@ -184,7 +185,7 @@ public:
  UFUNCTION(BlueprintCallable) void Choose(int32 Index);
  UFUNCTION(BlueprintCallable) void SetRunState(ERunState NewState);
  UFUNCTION(BlueprintCallable) void TogglePause();
- void TickV10Verification(float Delta);
+ void TickV10Verification(float Delta); void TickBleepReview(float Delta);
  void OfferUpgrades(); void BuildArena(); void EnsureDefaults(); void SpawnEnemy(bool Elite=false);
  void EnemyDefeated(ASurvivalEnemy* Enemy); void ApplyUpgrade(const FUpgradeSpec& Upgrade);
  ACatmuraiCharacter* Player() const;

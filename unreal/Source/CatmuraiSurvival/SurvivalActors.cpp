@@ -98,8 +98,31 @@ void UAbilityComponent::FlyingSlash(){auto* P=Cast<ACatmuraiCharacter>(GetOwner(
  ASurvivalEnemy* Nearest=nullptr;float Best=S->Range;for(auto E:G->EnemyPool)if(E->Active){float D=FVector::Dist2D(E->GetActorLocation(),P->GetActorLocation());if(D<Best){Best=D;Nearest=E;}}if(!Nearest)return;WaveRemaining=FMath::Max(.2f,S->Cooldown*P->CooldownMultiplier);const FVector Aim=(Nearest->GetActorLocation()-P->GetActorLocation()).GetSafeNormal2D();const int32 Count=FMath::Clamp(S->ProjectileCount+P->ExtraProjectiles,1,8);
  for(int32 i=0;i<Count;i++){auto* B=GetWorld()->SpawnActor<ACombatProjectile>(P->GetActorLocation(),FRotator::ZeroRotator);if(B){B->Direction=Aim.RotateAngleAxis((i-(Count-1)*.5f)*12,FVector::UpVector);B->Damage=S->Damage*P->DamageMultiplier;B->Life=S->Duration;}}P->CombatCue(TEXT("FlyingSlash"),P->GetActorLocation(),false);
 }
-ASurvivalEnemy::ASurvivalEnemy(){PrimaryActorTick.bCanEverTick=false;Body=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ReplaceableEnemy"));SetRootComponent(Body);Body->SetStaticMesh(Shape(TEXT("Sphere")));Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);Health=CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));}
-void ASurvivalEnemy::Activate(const FEnemySpec& InSpec,FVector Location,bool IsElite){Spec=InSpec;Body->SetStaticMesh(Shape(Spec.Name==TEXT("Angry Sushi")?TEXT("Cube"):Spec.Name==TEXT("Barrel Crab")?TEXT("Cylinder"):TEXT("Sphere")));Elite=IsElite;Active=true;Push=FVector::ZeroVector;AttackTimer=1;Windup=0;Health->Maximum=Health->Current=Spec.Health*(Elite?12:1);SetActorLocation(Location);SetActorHiddenInGame(false);SetActorScale3D(FVector(Spec.Scale*(Elite?2.2f:1)));Tint(Body,Elite?FLinearColor(.45,.08,.8):Spec.Color);}
+ASurvivalEnemy::ASurvivalEnemy(){
+ PrimaryActorTick.bCanEverTick=false;
+ SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("EnemyRoot")));
+ Body=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ReplaceableEnemy"));Body->SetupAttachment(RootComponent);
+ BleepMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Characters/BleepFinal/SM_Bleep_Final.SM_Bleep_Final"));
+ Body->SetStaticMesh(BleepMesh?BleepMesh.Get():Shape(TEXT("Sphere")));
+ Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+ Health=CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
+}
+void ASurvivalEnemy::Activate(const FEnemySpec& InSpec,FVector Location,bool IsElite){
+ Spec=InSpec;Elite=IsElite;Active=true;Push=FVector::ZeroVector;AttackTimer=1;Windup=0;
+ Health->Maximum=Health->Current=Spec.Health*(Elite?12:1);
+ SetActorLocation(Location);SetActorHiddenInGame(false);
+ const float VisualScale=Spec.Scale*(Elite?2.2f:1);SetActorScale3D(FVector(VisualScale));
+ if(BleepMesh){
+  Body->SetStaticMesh(BleepMesh);
+  // Keep the gameplay anchor unchanged while grounding the bottom-origin static visual.
+  Body->SetRelativeLocation(FVector(0,0,-55.f/FMath::Max(VisualScale,.01f)));
+  Body->SetRelativeRotation(FRotator(0,-90,0));
+ }else{
+  Body->SetRelativeTransform(FTransform::Identity);
+  Body->SetStaticMesh(Shape(Spec.Name==TEXT("Angry Sushi")?TEXT("Cube"):Spec.Name==TEXT("Barrel Crab")?TEXT("Cylinder"):TEXT("Sphere")));
+  Tint(Body,Elite?FLinearColor(.45,.08,.8):Spec.Color);
+ }
+}
 void ASurvivalEnemy::Simulate(float Delta,ACatmuraiCharacter* P){if(!Active||!P)return;AttackTimer-=Delta;FVector Offset=P->GetActorLocation()-GetActorLocation();Offset.Z=0;const float Distance=Offset.Size();const FVector Direction=Offset.GetSafeNormal();if(Distance>85*Spec.Scale){FVector Move=Direction*Spec.Speed*Delta+Push*Delta;SetActorLocation(GetActorLocation()+Move);SetActorRotation(Direction.Rotation());}Push*=FMath::Exp(-Delta*8);if(Distance<125*Spec.Scale&&AttackTimer<=0){if(Windup<=0)Windup=.35f;else{Windup-=Delta;DrawDebugCircle(GetWorld(),GetActorLocation(),125*Spec.Scale,24,FColor::Red,false,.06,0,3,FVector::ForwardVector,FVector::RightVector,false);if(Windup<=0){P->ApplyIncomingHit(Spec.Damage*(Elite?2:1));AttackTimer=1.1f;}}}else Windup=0;}
 void ASurvivalEnemy::Hit(float Damage,FVector Direction,float Force,bool Critical){if(!Active)return;auto* G=Run(this);if(!G)return;Push=Direction*Force;FCombatNumber Number;Number.Position=GetActorLocation()+FVector(0,0,70);Number.Value=Damage;Number.Critical=Critical;if(G->Numbers.Num()<100)G->Numbers.Add(Number);DrawDebugSphere(GetWorld(),GetActorLocation(),Critical?55:30,8,Critical?FColor::Yellow:FColor::Cyan,false,.12,0,2);if(auto* P=G->Player())P->CombatCue(Critical?TEXT("Critical"):TEXT("Impact"),GetActorLocation(),Critical);if(Health->Hurt(Damage)){Active=false;SetActorHiddenInGame(true);G->EnemyDefeated(this);}}
 AXPOrb::AXPOrb(){PrimaryActorTick.bCanEverTick=false;auto* Mesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("XP"));SetRootComponent(Mesh);Mesh->SetStaticMesh(Shape(TEXT("Sphere")));Mesh->SetWorldScale3D(FVector(.18f));Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
