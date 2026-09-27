@@ -43,8 +43,10 @@ void ACatmuraiCharacter::Landed(const FHitResult& Hit){
 }
 void ACatmuraiCharacter::Dash(){
  auto* G=Cast<ASurvivalGameMode>(UGameplayStatics::GetGameMode(this));auto* M=GetCharacterMovement();
- if(!G||G->State!=ERunState::Playing||DashCooldown>0||DashTime>0||SlashTime>0||(!M->IsMovingOnGround()&&AirDashesUsed>=1))return;
+ if(!G||G->State!=ERunState::Playing||DashCooldown>0||DashTime>0||(!M->IsMovingOnGround()&&AirDashesUsed>=1))return;
  if(!M->IsMovingOnGround())++AirDashesUsed;
+ // Dash cancels the slash, including a strike whose windup has not completed.
+ SlashTime=0;SlashVisualTime=0;Abilities->PendingSlash=-1;
  bDashStartedGrounded=M->IsMovingOnGround();DashTime=.2f;DashCooldown=.6f;DashDirection=MoveDirection.GetSafeNormal2D();
  if(DashDirection.IsNearlyZero())DashDirection=GetActorForwardVector();SetActorRotation(DashDirection.Rotation());
  M->Velocity=DashDirection*3060;M->GravityScale=0;SetClip(DashAnimation,false,.03f,true);CombatCue(TEXT("Dash"),GetActorLocation(),false);
@@ -66,7 +68,7 @@ void ACatmuraiCharacter::Tick(float Delta){
  TryBufferedJump(false);JumpBuffer=FMath::Max(0.f,JumpBuffer-Delta);
  SlashTime=FMath::Max(0.f,SlashTime-Delta);SlashVisualTime=SlashTime;
  M->bOrientRotationToMovement=SlashTime<=0&&DashTime<=0;
- M->MaxWalkSpeed=BaseMoveSpeed*(SlashTime>0?.2f:1.f)*(Ground?1.f:.85f);
+ M->MaxWalkSpeed=BaseMoveSpeed*(Ground?1.f:.85f);
  M->MaxAcceleration=2449;M->BrakingDecelerationWalking=3367;M->BrakingDecelerationFalling=3367;
  M->GroundFriction=0;M->BrakingFrictionFactor=0;
  if(DashTime>0){

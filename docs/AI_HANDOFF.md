@@ -46,3 +46,9 @@ Editor build, BLEEP_IMPORT_PASS, rendered BLEEP_RUNTIME_PASS, canonical file has
 Owner: Codex; branch `codex/combat-readability`. Enemy attacks now commit to their position during 0.45s normal / 0.65s heavy / 0.85s elite warnings. Missed attacks consume recovery. Floor warning circles show reach and elapsed windup; injured enemies and elites show health. Knockback applies inside melee range, interrupts warnings and temporarily suppresses pursuit. High airborne players avoid ground strikes; dash protection remains. Arena bounds constrain knockback. Bleep remains static with no animation added. Boss-facing HUD text now names Bleep.
 
 Build and canonical COMBAT_RUNTIME_PASS passed all seven focused checks (warning, dodge/miss/recovery, stationary windup, close knockback/interrupt, unavoided damage, dash and jump avoidance). Canonical CATMURAI_SMOKE_PASS passed the survival loop. Rendered canonical screenshot inspected at Saved/BleepReview/combat-feedback.png; health indicators draw behind fixed HUD panels. Source/binary backup in canonical Saved/BeforeCombat-*. This is a verified combat pass, not a full human balance playthrough. No independent Claude review or remote upload claimed.
+
+## Free movement during attacks — 2026-09-27
+
+Removed the slash's 80% movement penalty: repeated nearby auto-attacks no longer keep the player at walking speed 20%. Ground and airborne movement retain their normal speeds during attacks. Dash can interrupt a slash and clears its pending hit, while preserving the attack cooldown and existing dash limits.
+
+Runtime distance check across 90 frames: free movement 525.9 cm, manual slash 525.6 cm, repeated automatic attacks 526.1 cm. Continuous auto-slash coverage and dash cancellation passed. Canonical CATMURAI_V10_RUNTIME_PASS and CATMURAI_SMOKE_PASS passed after installation. Backup: canonical Saved/BeforeFreeMovement-*. No new enemy animation or remote upload.

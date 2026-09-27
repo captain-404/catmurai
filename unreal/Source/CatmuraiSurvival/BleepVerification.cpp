@@ -2,6 +2,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "UnrealClient.h"
@@ -49,6 +50,29 @@ void ASurvivalGameMode::TickBleepReview(float Delta){
    Probe(P->Health->Current==After,TEXT("dash_avoids_strike"));P->DashTime=0;
    E->Activate(Spec,Start,false);E->Windup=.01f;P->ImpactTime=0;P->SetActorLocation(FVector(90,0,300));E->Simulate(.05f,P);
    Probe(P->Health->Current==After,TEXT("high_jump_avoids_strike"));
+   // Compare real movement with and without repeated close-range attacks.
+   auto Travel=[&](bool Automatic,bool Manual){
+    P->SetActorLocation(FVector(0,0,77));P->SetActorRotation(FRotator::ZeroRotator);
+    auto* Move=P->GetCharacterMovement();Move->StopMovementImmediately();Move->SetMovementMode(MOVE_Walking);
+    P->SlashTime=0;P->DashTime=0;P->Abilities->SlashRemaining=0;P->Abilities->PendingSlash=-1;P->Abilities->AutoAttack=Automatic;
+    E->Activate(Spec,FVector(100,0,55),false);E->Health->Current=E->Health->Maximum=100000;
+    if(Manual)P->Attack();
+    const FVector Begin=P->GetActorLocation();int SlashingFrames=0;
+    for(int Frame=0;Frame<90;++Frame){
+     E->SetActorLocation(P->GetActorLocation()+FVector(100,0,0));
+     P->Abilities->TickComponent(1.f/60,LEVELTICK_All,nullptr);
+     P->Forward(1);P->Tick(1.f/60);Move->TickComponent(1.f/60,LEVELTICK_All,nullptr);
+     if(P->SlashTime>0)++SlashingFrames;
+    }
+    P->Forward(0);P->Abilities->AutoAttack=false;
+    if(Automatic)Probe(SlashingFrames>70,TEXT("continuous_close_attack_exercised"));
+    return FVector::Dist2D(Begin,P->GetActorLocation());
+   };
+   const float FreeTravel=Travel(false,false),ManualTravel=Travel(false,true),AutoTravel=Travel(true,false);
+   UE_LOG(LogTemp,Display,TEXT("COMBAT_TRAVEL free=%.1f manual=%.1f automatic=%.1f"),FreeTravel,ManualTravel,AutoTravel);
+   Probe(FreeTravel>400&&ManualTravel>=FreeTravel*.95f&&AutoTravel>=FreeTravel*.95f,TEXT("full_speed_during_attacks"));
+   P->GetCharacterMovement()->SetMovementMode(MOVE_Walking);P->DashCooldown=0;P->DashTime=0;P->PlaySlashAnimation();P->Abilities->PendingSlash=.2f;P->Dash();
+   Probe(P->DashTime>0&&P->SlashTime==0&&P->Abilities->PendingSlash<0,TEXT("dash_cancels_attack_without_delayed_hit"));
    UE_LOG(LogTemp,Display,TEXT("COMBAT_RUNTIME_%s"),OK?TEXT("PASS"):TEXT("FAIL"));
   }
   UE_LOG(LogTemp,Display,TEXT("BLEEP_RUNTIME_%s"),OK?TEXT("PASS"):TEXT("FAIL"));FPlatformMisc::RequestExitWithStatus(false,OK?0:1);
