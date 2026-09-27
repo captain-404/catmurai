@@ -1,0 +1,58 @@
+
+build-v10.log
+Result: Succeeded
+
+validate-v10.log
+[2026.09.27-14.52.32:879][  0]LogPython: V10_CLIP Idle duration=2.4000000953674316
+[2026.09.27-14.52.32:879][  0]LogPython: V10_CLIP Run duration=0.800000011920929
+[2026.09.27-14.52.32:879][  0]LogPython: V10_CLIP Slash duration=1.0666667222976685
+[2026.09.27-14.52.32:879][  0]LogPython: V10_CLIP JumpStart duration=0.2666666805744171
+[2026.09.27-14.52.32:879][  0]LogPython: V10_CLIP JumpRise duration=0.4000000059604645
+[2026.09.27-14.52.32:879][  0]LogPython: V10_CLIP JumpFall duration=0.5333333611488342
+[2026.09.27-14.52.32:879][  0]LogPython: V10_CLIP JumpLand duration=0.5333333611488342
+[2026.09.27-14.52.32:879][  0]LogPython: V10_CLIP JumpFlip duration=0.6000000238418579
+[2026.09.27-14.52.32:879][  0]LogPython: V10_CLIP Dash duration=0.46666666865348816
+[2026.09.27-14.52.32:879][  0]LogTemp: Display: V10_LOD 0 vertices=77144 triangles=79007 sections=4
+[2026.09.27-14.52.32:880][  0]LogTemp: Display: V10_BODY_HEIGHT lod=0 height=149.736
+[2026.09.27-14.52.32:880][  0]LogTemp: Display: V10_LOD 1 vertices=25861 triangles=26364 sections=4
+[2026.09.27-14.52.32:880][  0]LogTemp: Display: V10_BODY_HEIGHT lod=1 height=149.637
+[2026.09.27-14.52.32:880][  0]LogTemp: Display: V10_LOD 2 vertices=15033 triangles=14748 sections=4
+[2026.09.27-14.52.32:880][  0]LogTemp: Display: V10_BODY_HEIGHT lod=2 height=149.443
+[2026.09.27-14.52.32:880][  0]LogTemp: Display: V10_LOD 3 vertices=10285 triangles=10268 sections=4
+[2026.09.27-14.52.32:880][  0]LogTemp: Display: V10_BODY_HEIGHT lod=3 height=149.617
+[2026.09.27-14.52.32:880][  0]LogTemp: Display: CATMURAI_V10_ASSET_PASS height=208.358 bones=51
+[2026.09.27-14.52.32:881][  0]LogPython: CATMURAI_V10_REOPEN_PASS: nine clips, four LODs, morphs, bind grip, body scale, normal map and materials
+
+runtime-v10.log
+[2026.09.27-14.58.28:879][ 61]LogTemp: Display: V10_CHECK idle PASS
+[2026.09.27-14.58.29:448][ 97]LogTemp: Display: V10_CHECK run_speed PASS
+[2026.09.27-14.58.29:641][107]LogTemp: Display: V10_CHECK jump_rise PASS
+[2026.09.27-14.58.29:844][119]LogTemp: Display: V10_CHECK jump_height PASS
+[2026.09.27-14.58.29:844][119]LogTemp: Display: V10_CHECK double_jump PASS
+[2026.09.27-14.58.29:844][119]LogTemp: Display: V10_CHECK third_jump_rejected PASS
+[2026.09.27-14.58.30:105][162]LogTemp: Display: V10_CHECK landing_resets PASS
+[2026.09.27-14.58.30:348][198]LogTemp: Display: V10_CHECK dash_start PASS
+[2026.09.27-14.58.30:506][212]LogTemp: Display: V10_DASH_DISTANCE 620.83
+[2026.09.27-14.58.30:506][212]LogTemp: Display: V10_CHECK dash_distance PASS
+[2026.09.27-14.58.30:676][252]LogTemp: Display: V10_CHECK air_dash PASS
+[2026.09.27-14.58.30:704][259]LogTemp: Display: V10_CHECK air_dash_holds_height PASS
+[2026.09.27-14.58.30:704][259]LogTemp: Display: V10_CHECK jump_cancels_dash PASS
+[2026.09.27-14.58.30:859][298]LogTemp: Display: V10_CHECK second_air_dash_rejected PASS
+[2026.09.27-14.58.30:934][316]LogTemp: Display: V10_CHECK slash_no_instant_damage PASS
+[2026.09.27-14.58.30:986][329]LogTemp: Display: V10_CHECK slash_windup PASS
+[2026.09.27-14.58.31:028][339]LogTemp: Display: V10_CHECK slash_delayed_arc_hit PASS
+[2026.09.27-14.58.31:300][382]LogTemp: Display: V10_CHECK hand_r PASS
+[2026.09.27-14.58.31:300][382]LogTemp: Display: V10_CHECK weapon_r PASS
+[2026.09.27-14.58.31:300][382]LogTemp: Display: V10_CHECK face_morph PASS
+[2026.09.27-14.58.31:300][382]LogTemp: Display: V10_CHECK coyote_jump PASS
+[2026.09.27-14.58.31:376][400]LogTemp: Display: V10_CHECK short_hop_gravity PASS
+[2026.09.27-14.58.31:404][407]LogTemp: Display: V10_CHECK buffered_landing_jump PASS
+[2026.09.27-14.58.31:549][442]LogTemp: Display: V10_CHECK ground_dash_jump_cancel PASS
+[2026.09.27-14.58.31:688][476]LogTemp: Display: V10_CHECK ledge_fall_animation PASS
+[2026.09.27-14.58.31:688][476]LogTemp: Display: V10_CHECK ledge_double_jump PASS
+[2026.09.27-14.58.32:585][608]LogTemp: Display: V10_CHECK blink_animation PASS
+[2026.09.27-14.58.32:585][608]LogTemp: Display: V10_CHECK haste_scales_slash_timing PASS
+[2026.09.27-14.58.32:585][608]LogTemp: Display: CATMURAI_V10_RUNTIME_PASS
+
+smoke-v10.log
+[2026.09.27-14.59.34:866][543]LogTemp: Display: CATMURAI_SMOKE_PASS: spawn, dash, katana, projectile, death, XP, choices, resume, defeat, elite victory

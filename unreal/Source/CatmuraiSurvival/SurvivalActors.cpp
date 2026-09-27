@@ -33,51 +33,66 @@ void UHealthComponent::Heal(float Amount){if(FMath::IsFinite(Amount)&&Amount>0)C
 
 ACatmuraiCharacter::ACatmuraiCharacter(){
  PrimaryActorTick.bCanEverTick=true;GetCapsuleComponent()->InitCapsuleSize(34,75);bUseControllerRotationYaw=false;
- GetCharacterMovement()->MaxWalkSpeed=580;GetCharacterMovement()->bOrientRotationToMovement=true;GetCharacterMovement()->RotationRate=FRotator(0,900,0);
+ GetCharacterMovement()->MaxWalkSpeed=367;GetCharacterMovement()->bOrientRotationToMovement=true;GetCharacterMovement()->RotationRate=FRotator(0,720,0);
+ GetCharacterMovement()->GravityScale=3061.f/980.f;GetCharacterMovement()->AirControl=1;GetCharacterMovement()->JumpZVelocity=FMath::Sqrt(2.f*3061.f*168.f);JumpMaxCount=2;
  Health=CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));Abilities=CreateDefaultSubobject<UAbilityComponent>(TEXT("Abilities"));
  Presentation=CreateDefaultSubobject<USceneComponent>(TEXT("ReplaceablePresentation"));Presentation->SetupAttachment(RootComponent);
  // The handoff's drawn variant includes the katana weighted to weapon_r.
  GetMesh()->SetupAttachment(Presentation);
- GetMesh()->SetSkeletalMesh(LoadObject<USkeletalMesh>(nullptr,TEXT("/Game/Characters/CatmuraiV2/SK_Catmurai_Drawn.SK_Catmurai_Drawn")));
+ GetMesh()->SetSkeletalMesh(LoadObject<USkeletalMesh>(nullptr,TEXT("/Game/Characters/CatmuraiV10/SK_Catmurai_v10.SK_Catmurai_v10")));
  GetMesh()->SetRelativeLocation(FVector(0,0,-75));
  GetMesh()->SetRelativeRotation(FRotator(0,90,0));
  GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
- IdleAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV2/A_Catmurai_Idle.A_Catmurai_Idle"));
- RunAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV2/A_Catmurai_Run.A_Catmurai_Run"));
- SlashAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV2/A_Catmurai_Slash.A_Catmurai_Slash"));
+ IdleAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV10/A_Catmurai_Idle.A_Catmurai_Idle"));
+ RunAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV10/A_Catmurai_Run.A_Catmurai_Run"));
+ SlashAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV10/A_Catmurai_Slash.A_Catmurai_Slash"));
+ JumpStartAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV10/A_Catmurai_JumpStart.A_Catmurai_JumpStart"));
+ JumpRiseAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV10/A_Catmurai_JumpRise.A_Catmurai_JumpRise"));
+ JumpFallAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV10/A_Catmurai_JumpFall.A_Catmurai_JumpFall"));
+ JumpLandAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV10/A_Catmurai_JumpLand.A_Catmurai_JumpLand"));
+ JumpFlipAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV10/A_Catmurai_JumpFlip.A_Catmurai_JumpFlip"));
+ DashAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV10/A_Catmurai_Dash.A_Catmurai_Dash"));
  SwordPivot=CreateDefaultSubobject<USceneComponent>(TEXT("SwordPivot"));SwordPivot->SetupAttachment(GetMesh(),TEXT("weapon_r"));
  CameraBoom=CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));CameraBoom->SetupAttachment(RootComponent);CameraBoom->TargetArmLength=1250;CameraBoom->SetRelativeRotation(FRotator(-57,-45,0));CameraBoom->bInheritPitch=false;CameraBoom->bInheritYaw=false;CameraBoom->bInheritRoll=false;CameraBoom->bDoCollisionTest=false;CameraBoom->bEnableCameraLag=true;CameraBoom->CameraLagSpeed=12;
  Camera=CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));Camera->SetupAttachment(CameraBoom);Camera->FieldOfView=65;
 }
-void ACatmuraiCharacter::BeginPlay(){Super::BeginPlay();if(IdleAnimation){GetMesh()->PlayAnimation(IdleAnimation,true);CurrentAnimation=IdleAnimation;}UE_LOG(LogTemp,Display,TEXT("CATMURAI_V2: mesh=%s idle=%s run=%s slash=%s weaponBone=%d"),*GetNameSafe(GetMesh()->GetSkeletalMeshAsset()),*GetNameSafe(IdleAnimation),*GetNameSafe(RunAnimation),*GetNameSafe(SlashAnimation),GetMesh()->GetBoneIndex(TEXT("weapon_r")));}
-void ACatmuraiCharacter::PlaySlashAnimation(){if(!SlashAnimation)return;SlashVisualTime=FMath::Min(.65f,FMath::Max(.12f,Abilities->SlashRemaining));GetMesh()->PlayAnimation(SlashAnimation,false);GetMesh()->SetPlayRate(SlashAnimation->GetPlayLength()/SlashVisualTime);CurrentAnimation=SlashAnimation;}
+
+
 void ACatmuraiCharacter::SetupPlayerInputComponent(UInputComponent* Input){
  Super::SetupPlayerInputComponent(Input);Input->BindAxis(TEXT("MoveForward"),this,&ACatmuraiCharacter::Forward);Input->BindAxis(TEXT("MoveRight"),this,&ACatmuraiCharacter::Right);
- Input->BindKey(EKeys::LeftMouseButton,IE_Pressed,this,&ACatmuraiCharacter::Attack);Input->BindKey(EKeys::Q,IE_Pressed,this,&ACatmuraiCharacter::Special);Input->BindKey(EKeys::SpaceBar,IE_Pressed,this,&ACatmuraiCharacter::Dash);
+ Input->BindKey(EKeys::LeftMouseButton,IE_Pressed,this,&ACatmuraiCharacter::Attack);Input->BindKey(EKeys::Q,IE_Pressed,this,&ACatmuraiCharacter::Special);Input->BindKey(EKeys::SpaceBar,IE_Pressed,this,&ACatmuraiCharacter::PressJump);
+ Input->BindKey(EKeys::SpaceBar,IE_Released,this,&ACatmuraiCharacter::ReleaseJump);
+ Input->BindKey(EKeys::Gamepad_FaceButton_Bottom,IE_Pressed,this,&ACatmuraiCharacter::PressJump);
+ Input->BindKey(EKeys::Gamepad_FaceButton_Bottom,IE_Released,this,&ACatmuraiCharacter::ReleaseJump);
+ Input->BindKey(EKeys::LeftShift,IE_Pressed,this,&ACatmuraiCharacter::Dash);
+ Input->BindKey(EKeys::RightShift,IE_Pressed,this,&ACatmuraiCharacter::Dash);
+ Input->BindKey(EKeys::Gamepad_FaceButton_Right,IE_Pressed,this,&ACatmuraiCharacter::Dash);
+ Input->BindKey(EKeys::Gamepad_FaceButton_Left,IE_Pressed,this,&ACatmuraiCharacter::Attack);
+ Input->BindKey(EKeys::J,IE_Pressed,this,&ACatmuraiCharacter::Attack);
  Input->BindKey(EKeys::One,IE_Pressed,this,&ACatmuraiCharacter::Choice1).bExecuteWhenPaused=true;Input->BindKey(EKeys::Two,IE_Pressed,this,&ACatmuraiCharacter::Choice2).bExecuteWhenPaused=true;Input->BindKey(EKeys::Three,IE_Pressed,this,&ACatmuraiCharacter::Choice3).bExecuteWhenPaused=true;Input->BindKey(EKeys::Escape,IE_Pressed,this,&ACatmuraiCharacter::PauseRun).bExecuteWhenPaused=true;Input->BindKey(EKeys::R,IE_Pressed,this,&ACatmuraiCharacter::Retry).bExecuteWhenPaused=true;
 }
-void ACatmuraiCharacter::Forward(float Value){if(auto* G=Run(this);G&&G->State==ERunState::Playing)AddMovementInput(FRotator(0,-45,0).Vector(),Value);}
-void ACatmuraiCharacter::Right(float Value){if(auto* G=Run(this);G&&G->State==ERunState::Playing)AddMovementInput(FRotator(0,45,0).Vector(),Value);}
-void ACatmuraiCharacter::Attack(){Abilities->Katana();}void ACatmuraiCharacter::Special(){Abilities->FlyingSlash();}
+
+
+void ACatmuraiCharacter::Attack(){const bool Automatic=Abilities->AutoAttack;Abilities->AutoAttack=false;Abilities->Katana();Abilities->AutoAttack=Automatic;}void ACatmuraiCharacter::Special(){Abilities->FlyingSlash();}
 void ACatmuraiCharacter::Choice1(){if(auto* G=Run(this))G->Choose(0);}void ACatmuraiCharacter::Choice2(){if(auto* G=Run(this))G->Choose(1);}void ACatmuraiCharacter::Choice3(){if(auto* G=Run(this))G->Choose(2);}
 void ACatmuraiCharacter::PauseRun(){if(auto* G=Run(this))G->TogglePause();}
 void ACatmuraiCharacter::Retry(){if(auto* G=Run(this);G&&(G->State==ERunState::Defeat||G->State==ERunState::Victory)){UGameplayStatics::SetGamePaused(this,false);UGameplayStatics::OpenLevel(this,FName(*GetWorld()->GetMapName()),false,TEXT("game=/Script/CatmuraiSurvival.SurvivalGameMode"));}}
-void ACatmuraiCharacter::Dash(){auto* G=Run(this);if(!G||G->State!=ERunState::Playing||DashCooldown>0)return;DashTime=.18f;DashCooldown=2.4f;DashDirection=GetLastMovementInputVector().GetSafeNormal2D();if(DashDirection.IsNearlyZero())DashDirection=GetActorForwardVector();CombatCue(TEXT("Dash"),GetActorLocation(),false);}
+
 void ACatmuraiCharacter::ApplyIncomingHit(float Amount){if(DashTime>0||ImpactTime>0)return;ImpactTime=.3f;CombatCue(TEXT("Hurt"),GetActorLocation(),false);if(Health->Hurt(Amount))if(auto* G=Run(this))G->SetRunState(ERunState::Defeat);}
-void ACatmuraiCharacter::Tick(float Delta){Super::Tick(Delta);DashCooldown=FMath::Max(0.f,DashCooldown-Delta);ImpactTime=FMath::Max(0.f,ImpactTime-Delta);if(DashTime>0){DashTime-=Delta;AddActorWorldOffset(DashDirection*1900*Delta,true);DrawDebugLine(GetWorld(),GetActorLocation(),GetActorLocation()-DashDirection*90,FColor::Cyan,false,.12,0,5);}
- FVector L=GetActorLocation();L.X=FMath::Clamp(L.X,-2250.f,2250.f);L.Y=FMath::Clamp(L.Y,-2250.f,2250.f);if(L.Z<-100)L.Z=100;SetActorLocation(L);
- SlashTime=FMath::Max(0.f,SlashTime-Delta);SlashVisualTime=FMath::Max(0.f,SlashVisualTime-Delta);
- UAnimSequence* Desired=SlashVisualTime>0?SlashAnimation.Get():(GetVelocity().Size2D()>10||DashTime>0?RunAnimation.Get():IdleAnimation.Get());
- if(Desired&&Desired!=CurrentAnimation){GetMesh()->PlayAnimation(Desired,true);GetMesh()->SetPlayRate(1.f);CurrentAnimation=Desired;}
-}
+
 
 UAbilityComponent::UAbilityComponent(){PrimaryComponentTick.bCanEverTick=true;FAbilitySpec Slash;Abilities.Add(Slash);FAbilitySpec Wave;Wave.Kind=EAbilityKind::FlyingSlash;Wave.Cooldown=3.5f;Wave.Damage=18;Wave.Range=1400;Abilities.Add(Wave);}
-void UAbilityComponent::TickComponent(float Delta,ELevelTick TickType,FActorComponentTickFunction* Function){Super::TickComponent(Delta,TickType,Function);auto* G=Run(this);if(!G||G->State!=ERunState::Playing)return;SlashRemaining=FMath::Max(0.f,SlashRemaining-Delta);WaveRemaining=FMath::Max(0.f,WaveRemaining-Delta);if(AutoAttack){Katana();FlyingSlash();}}
-void UAbilityComponent::Katana(){auto* P=Cast<ACatmuraiCharacter>(GetOwner());auto* G=Run(this);if(!P||!G||G->State!=ERunState::Playing||SlashRemaining>0)return;const FAbilitySpec* Spec=Abilities.FindByPredicate([](const FAbilitySpec& S){return S.Kind==EAbilityKind::Katana;});if(!Spec)return;
- ASurvivalEnemy* Nearest=nullptr;float Best=Spec->Range*P->AreaMultiplier;for(auto E:G->EnemyPool)if(E->Active){const float D=FVector::Dist2D(E->GetActorLocation(),P->GetActorLocation());if(D<Best){Best=D;Nearest=E;}}if(AutoAttack&&!Nearest)return;if(Nearest)P->SetActorRotation(FRotator(0,(Nearest->GetActorLocation()-P->GetActorLocation()).Rotation().Yaw,0));
- SlashRemaining=FMath::Max(.12f,Spec->Cooldown*P->CooldownMultiplier);P->SlashTime=.25f;P->PlaySlashAnimation();const FVector Origin=P->GetActorLocation();const FVector Forward=P->GetActorForwardVector();
- for(auto E:G->EnemyPool)if(E->Active){const FVector Offset=E->GetActorLocation()-Origin;if(Offset.Size2D()<=Spec->Range*P->AreaMultiplier&&FVector::DotProduct(Forward,Offset.GetSafeNormal2D())>.15f){const bool Critical=FMath::FRand()<P->CritChance;E->Hit(Spec->Damage*P->DamageMultiplier*(Critical?P->CritMultiplier:1),Offset.GetSafeNormal2D(),P->Knockback,Critical);}}
- FVector Previous;for(int i=0;i<=18;i++){const FVector Point=Origin+Forward.RotateAngleAxis(-80+i*160.f/18,FVector::UpVector)*Spec->Range*P->AreaMultiplier;if(i)DrawDebugLine(GetWorld(),Previous,Point,FColor(160,230,255),false,.18f,0,6);Previous=Point;}P->CombatCue(TEXT("Katana"),Origin,false);
+void UAbilityComponent::TickComponent(float Delta,ELevelTick TickType,FActorComponentTickFunction* Function){Super::TickComponent(Delta,TickType,Function);auto* G=Run(this);if(!G||G->State!=ERunState::Playing)return;SlashRemaining=FMath::Max(0.f,SlashRemaining-Delta);WaveRemaining=FMath::Max(0.f,WaveRemaining-Delta);if(PendingSlash>=0){PendingSlash-=Delta;if(PendingSlash<=0){PendingSlash=-1;ApplySlashHit();}}if(AutoAttack){Katana();FlyingSlash();}}
+void UAbilityComponent::Katana(){auto* P=Cast<ACatmuraiCharacter>(GetOwner());auto* G=Run(this);if(!P||!G||G->State!=ERunState::Playing||SlashRemaining>0||P->SlashTime>0||P->DashTime>0)return;const FAbilitySpec* Spec=Abilities.FindByPredicate([](const FAbilitySpec& S){return S.Kind==EAbilityKind::Katana;});if(!Spec)return;
+ ASurvivalEnemy* Nearest=nullptr;float Best=Spec->Range*P->AreaMultiplier;for(auto E:G->EnemyPool)if(E->Active){const float D=FVector::Dist2D(E->GetActorLocation(),P->GetActorLocation());if(D<Best){Best=D;Nearest=E;}}if(AutoAttack&&!Nearest)return;if(AutoAttack&&Nearest)P->SetActorRotation(FRotator(0,(Nearest->GetActorLocation()-P->GetActorLocation()).Rotation().Yaw,0));
+ SlashRemaining=FMath::Max(.12f,Spec->Cooldown*P->CooldownMultiplier);P->PlaySlashAnimation();PendingSlash=P->ActiveSlashDuration*.35f;
+}
+void UAbilityComponent::ApplySlashHit(){
+ auto* P=Cast<ACatmuraiCharacter>(GetOwner());auto* G=Run(this);if(!P||!G||G->State!=ERunState::Playing)return;
+ const FAbilitySpec* Spec=Abilities.FindByPredicate([](const FAbilitySpec& S){return S.Kind==EAbilityKind::Katana;});if(!Spec)return;
+ const FVector Origin=P->GetActorLocation();const FVector Forward=P->GetActorForwardVector();
+ for(auto E:G->EnemyPool)if(E->Active){const FVector Offset=E->GetActorLocation()-Origin;if(Offset.Size2D()<=Spec->Range*P->AreaMultiplier&&FVector::DotProduct(Forward,Offset.GetSafeNormal2D())>FMath::Cos(FMath::DegreesToRadians(55.f))){const bool Critical=FMath::FRand()<P->CritChance;E->Hit(Spec->Damage*P->DamageMultiplier*(Critical?P->CritMultiplier:1),Offset.GetSafeNormal2D(),P->Knockback,Critical);}}
+ FVector Previous;for(int i=0;i<=18;i++){const FVector Point=Origin+Forward.RotateAngleAxis(-55+i*110.f/18,FVector::UpVector)*Spec->Range*P->AreaMultiplier;if(i)DrawDebugLine(GetWorld(),Previous,Point,FColor(160,230,255),false,.18f,0,6);Previous=Point;}P->CombatCue(TEXT("Katana"),Origin,false);
 }
 void UAbilityComponent::FlyingSlash(){auto* P=Cast<ACatmuraiCharacter>(GetOwner());auto* G=Run(this);if(!P||!G||G->State!=ERunState::Playing||WaveRemaining>0)return;const FAbilitySpec* S=Abilities.FindByPredicate([](const FAbilitySpec& A){return A.Kind==EAbilityKind::FlyingSlash;});if(!S)return;
  ASurvivalEnemy* Nearest=nullptr;float Best=S->Range;for(auto E:G->EnemyPool)if(E->Active){float D=FVector::Dist2D(E->GetActorLocation(),P->GetActorLocation());if(D<Best){Best=D;Nearest=E;}}if(!Nearest)return;WaveRemaining=FMath::Max(.2f,S->Cooldown*P->CooldownMultiplier);const FVector Aim=(Nearest->GetActorLocation()-P->GetActorLocation()).GetSafeNormal2D();const int32 Count=FMath::Clamp(S->ProjectileCount+P->ExtraProjectiles,1,8);

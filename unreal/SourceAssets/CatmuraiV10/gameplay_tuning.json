@@ -1,0 +1,44 @@
+{
+  "_about": "Catmurai player tuning from the Unity prototype (CatmuraiPlayerController.cs, 2026-09-26). Unity units are metres on a character 0.98 m tall (capsule height 0.98, radius 0.22). 'ue_cm_at_150cm' rescales each distance/speed to a character that is 150 cm tall in Unreal (factor 153.06). Keep the ratio to body height if the Unreal character ends up a different size.",
+  "body_height_unity_m": 0.98,
+  "scale_to_150cm": 153.06,
+  "movement": {
+    "moveSpeed":            {"unity": 2.4,  "unit": "m/s",   "ue_cm_at_150cm": 367},
+    "acceleration":         {"unity": 16,   "unit": "m/s^2", "ue_cm_at_150cm": 2449},
+    "deceleration":         {"unity": 22,   "unit": "m/s^2", "ue_cm_at_150cm": 3367},
+    "turnSpeed":            {"unity": 720,  "unit": "deg/s"},
+    "runClipSpeed":         {"unity": 0.85, "unit": "m/s", "ue_cm_at_150cm": 130, "note": "ground speed the Run clip matches at play rate 1.0; play rate = speed / runClipSpeed, clamped 0.8..4 (stops foot sliding)"}
+  },
+  "jump": {
+    "gravity":              {"unity": -20,  "unit": "m/s^2", "ue_cm_at_150cm": -3061, "ue_gravity_scale_equiv": 3.12},
+    "jumpHeight":           {"unity": 1.1,  "unit": "m",     "ue_cm_at_150cm": 168},
+    "coyoteTime":           {"unity": 0.12, "unit": "s"},
+    "jumpBuffer":           {"unity": 0.12, "unit": "s"},
+    "fallGravityMultiplier":{"unity": 1.6,  "note": "applied while falling AND while rising if the jump button is released early (variable-height short hop)"},
+    "airControl":           {"unity": 0.85, "note": "fraction of move speed reachable in the air"},
+    "fallAnimDelay":        {"unity": 0.12, "unit": "s", "note": "walking off a ledge only switches the anim to Air after this long (ignores steps/bumps)"}
+  },
+  "double_jump": {
+    "maxAirJumps":          {"unity": 1, "note": "reset on landing; also allowed after walking off a ledge once past coyote time"},
+    "airJumpHeightMultiplier": {"unity": 0.9, "note": "~0.99 m / ~151 cm"},
+    "airJumpRedirect":      {"unity": 0.6, "note": "horizontal velocity lerps this far toward stick direction * moveSpeed at the moment of the air jump"}
+  },
+  "dash": {
+    "input": "Left/Right Shift, gamepad face-button East",
+    "dashDistance":         {"unity": 4.0, "unit": "m", "ue_cm_at_150cm": 612},
+    "dashDuration":         {"unity": 0.2, "unit": "s", "note": "constant speed 20 m/s (3061 cm/s)"},
+    "dashCooldown":         {"unity": 0.6, "unit": "s", "note": "measured from dash start"},
+    "maxAirDashes":         {"unity": 1, "note": "reset on landing; vertical velocity held at 0 during an air dash"},
+    "dashExitSpeedFactor":  {"unity": 1.0, "note": "leaves the dash at moveSpeed * this"},
+    "direction": "stick/WASD if held, else current facing; character snaps to face it; no dash while slashing",
+    "jump_cancel": "a jump or double jump during a dash ends it and keeps 1.3 x moveSpeed horizontally"
+  },
+  "slash": {
+    "slashDuration":        {"unity": 0.95, "unit": "s"},
+    "slashMoveFactor":      {"unity": 0.2,  "note": "move speed multiplier while slashing; no turning while slashing"},
+    "slashImpactFraction":  {"unity": 0.35, "note": "hit check at 35% of the duration (~frame 10 of the 33-frame clip)"},
+    "slashRange":           {"unity": 1.6, "unit": "m", "ue_cm_at_150cm": 245},
+    "slashArcDegrees":      {"unity": 110},
+    "slashDamage":          {"unity": 12}
+  }
+}

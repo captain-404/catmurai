@@ -1,6 +1,7 @@
 #include "Survival.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/LightComponent.h"
+#include "Components/DirectionalLightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/StaticMeshActor.h"
@@ -38,7 +39,9 @@ void ASurvivalGameMode::BuildArena(){
  Box(FVector(0,0,-30),FVector(48,48,.6),FLinearColor(.11,.08,.17));
  for(int32 Side=-1;Side<=1;Side+=2){Box(FVector(Side*2380,0,80),FVector(.4,48,2.2),FLinearColor(.27,.12,.32));Box(FVector(0,Side*2380,80),FVector(48,.4,2.2),FLinearColor(.27,.12,.32));}
  for(int32 i=0;i<8;i++){const float A=i*PI/4;const FVector Center(FMath::Cos(A)*2670,FMath::Sin(A)*2670,0);Box(Center+FVector(0,0,170),FVector(.42,.42,3.4),FLinearColor(.34,.035,.055));Box(Center+FVector(0,0,350),FVector(3.5,.7,.3),FLinearColor(.18,.07,.25));}
- auto* Sun=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,800),FRotator(-50,-35,0));Sun->GetLightComponent()->SetIntensity(3);Sun->GetLightComponent()->SetLightColor(FLinearColor(.75,.68,1));
+ auto* Sun=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,800),FRotator(-50,-35,0));Sun->GetLightComponent()->SetIntensity(3);Cast<UDirectionalLightComponent>(Sun->GetLightComponent())->SetForwardShadingPriority(1);Sun->GetLightComponent()->SetLightColor(FLinearColor(.75,.68,1));
+ // Soft opposing light keeps v10's dark clothing and sword hand readable.
+ auto* Fill=GetWorld()->SpawnActor<ADirectionalLight>(FVector(0,0,700),FRotator(-35,145,0));Fill->GetLightComponent()->SetIntensity(1.6f);Fill->GetLightComponent()->SetLightColor(FLinearColor(.85f,.9f,1.f));Fill->GetLightComponent()->SetCastShadows(false);
  auto* Sky=GetWorld()->SpawnActor<ASkyLight>();Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable);Sky->GetLightComponent()->SetIntensity(.8);Sky->GetLightComponent()->bRealTimeCapture=true;
 }
 void ASurvivalGameMode::SpawnEnemy(bool IsElite){auto* P=Player();if(!P||Tuning->Enemies.IsEmpty()||ActiveCount()>=Tuning->PopulationCap)return;
@@ -49,15 +52,15 @@ void ASurvivalGameMode::SpawnEnemy(bool IsElite){auto* P=Player();if(!P||Tuning-
  if(FVector::Dist2D(Location,P->GetActorLocation())<750)Location=FVector(-FMath::Sign(P->GetActorLocation().X)*1800,-FMath::Sign(P->GetActorLocation().Y)*1800,55);
  E->Activate(Spec,Location,IsElite);DirectorBudget=FMath::Max(0.f,DirectorBudget-Spec.Threat);
 }
-void ASurvivalGameMode::Tick(float Delta){Super::Tick(Delta);if(State!=ERunState::Playing)return;auto* P=Player();if(!P)return;RunTime+=Delta;DirectorTimer-=Delta;DirectorBudget=FMath::Min(12.f,DirectorBudget+Delta*(1.5f+RunTime/35+Level*.15f));
+void ASurvivalGameMode::Tick(float Delta){Super::Tick(Delta);if(FParse::Param(FCommandLine::Get(),TEXT("CatmuraiV10Test"))){TickV10Verification(Delta);return;}if(State!=ERunState::Playing)return;auto* P=Player();if(!P)return;RunTime+=Delta;DirectorTimer-=Delta;DirectorBudget=FMath::Min(12.f,DirectorBudget+Delta*(1.5f+RunTime/35+Level*.15f));
  if(DirectorTimer<=0){DirectorTimer=.4f;if(DirectorBudget>=3&&ActiveCount()<Tuning->PopulationCap)SpawnEnemy();}
  if(RunTime>=Tuning->RunDuration&&!EliteSpawned){if(ActiveCount()>=Tuning->PopulationCap){for(auto E:EnemyPool)if(E->Active){E->Active=false;E->SetActorHiddenInGame(true);break;}}SpawnEnemy(true);EliteSpawned=true;P->CombatCue(TEXT("EliteIntro"),P->GetActorLocation(),false);}
  AITimer+=Delta;if(AITimer>=.05f){const float Step=FMath::Min(.1f,AITimer);AITimer=0;for(auto E:EnemyPool){if(E)E->Simulate(Step,P);if(State!=ERunState::Playing)break;}for(auto Orb:OrbPool){Orb->Simulate(Step,P);if(State!=ERunState::Playing)break;}}
  for(auto& N:Numbers){N.Life-=Delta;N.Position.Z+=Delta*60;}Numbers.RemoveAll([](const FCombatNumber& N){return N.Life<=0;});
  // Opt-in runtime smoke exercises actual world actors; never runs in normal gameplay.
  if(FParse::Param(FCommandLine::Get(),TEXT("CatmuraiSmokeTest"))&&RunTime>3&&RunTime<10){
- if(EnemyPool.IsEmpty()){UE_LOG(LogTemp,Error,TEXT("CATMURAI_SMOKE_FAIL: no enemies"));FPlatformMisc::RequestExitWithStatus(false,1);return;}bool OK=true;const FVector Before=P->GetActorLocation();P->Dash();OK&=P->DashTime>0;P->Tick(.05f);OK&=FVector::Dist2D(Before,P->GetActorLocation())>40;P->SetActorLocation(Before);
- auto* E=EnemyPool[0].Get();E->Activate(Tuning->Enemies[0],Before+P->GetActorForwardVector()*100,false);P->Abilities->SlashRemaining=0;const float HP=E->Health->Current;P->Abilities->Katana();OK&=E->Health->Current<HP;
+ if(EnemyPool.IsEmpty()){UE_LOG(LogTemp,Error,TEXT("CATMURAI_SMOKE_FAIL: no enemies"));FPlatformMisc::RequestExitWithStatus(false,1);return;}bool OK=true;const FVector Before=P->GetActorLocation();P->Dash();OK&=P->DashTime>0;P->Tick(.01f);P->GetCharacterMovement()->TickComponent(.05f,LEVELTICK_All,nullptr);OK&=FVector::Dist2D(Before,P->GetActorLocation())>40;P->DashTime=0;P->GetCharacterMovement()->SetMovementMode(MOVE_Walking);P->SetActorLocation(Before);
+ auto* E=EnemyPool[0].Get();E->Activate(Tuning->Enemies[0],Before+P->GetActorForwardVector()*100,false);P->Abilities->SlashRemaining=0;const float HP=E->Health->Current;P->Abilities->Katana();OK&=E->Health->Current==HP;P->Abilities->TickComponent(.34f,LEVELTICK_All,nullptr);OK&=E->Health->Current<HP;
  P->Abilities->WaveRemaining=0;E->Activate(Tuning->Enemies[0],Before+P->GetActorForwardVector()*500,false);P->Abilities->FlyingSlash();OK&=P->Abilities->WaveRemaining>0;auto* Probe=GetWorld()->SpawnActor<ACombatProjectile>(Before,FRotator::ZeroRotator);Probe->Direction=P->GetActorForwardVector();const float WaveHP=E->Health->Current;Probe->Tick(.5f);OK&=E->Health->Current<WaveHP;Probe->Destroy();
  E->Hit(10000,FVector::ForwardVector,0,false);OK&=Kills>0&&OrbPool.Num()>0;
  auto* Pickup=OrbPool[0].Get();Pickup->Activate(Before,8);Pickup->Simulate(.05f,P);OK&=!Pickup->Active;OK&=State==ERunState::Choosing&&Choices.Num()==3;Choose(0);OK&=State==ERunState::Playing&&Level==2;
@@ -71,7 +74,7 @@ void ASurvivalGameMode::TogglePause(){if(State==ERunState::Playing)SetRunState(E
 void ASurvivalGameMode::AddXP(int32 Amount){if(Amount<=0||State==ERunState::Victory||State==ERunState::Defeat)return;XP+=Amount;if(State==ERunState::Playing&&XP>=5+Level*3){XP-=5+Level*3;++Level;OfferUpgrades();}}
 void ASurvivalGameMode::OfferUpgrades(){Choices.Reset();TArray<FUpgradeSpec> Eligible;for(const auto& U:Tuning->Upgrades)if(Ranks.FindRef(U.Kind)<U.MaxRank)Eligible.Add(U);while(Choices.Num()<3&&Eligible.Num()){const int32 Index=FMath::RandRange(0,Eligible.Num()-1);Choices.Add(Eligible[Index]);Eligible.RemoveAt(Index);}if(Choices.IsEmpty()){if(auto* P=Player())P->Health->Heal(20);return;}SetRunState(ERunState::Choosing);if(auto* P=Player())P->CombatCue(TEXT("LevelUp"),P->GetActorLocation(),false);}
 void ASurvivalGameMode::Choose(int32 Index){if(State!=ERunState::Choosing||!Choices.IsValidIndex(Index))return;ApplyUpgrade(Choices[Index]);Choices.Reset();SetRunState(ERunState::Playing);if(XP>=5+Level*3){XP-=5+Level*3;++Level;OfferUpgrades();}}
-void ASurvivalGameMode::ApplyUpgrade(const FUpgradeSpec& U){auto* P=Player();if(!P)return;++Ranks.FindOrAdd(U.Kind);switch(U.Kind){case EUpgradeKind::Damage:P->DamageMultiplier+=U.Amount;break;case EUpgradeKind::Speed:P->GetCharacterMovement()->MaxWalkSpeed*=1+U.Amount;break;case EUpgradeKind::Critical:P->CritChance=FMath::Min(.8f,P->CritChance+U.Amount);break;case EUpgradeKind::Area:P->AreaMultiplier+=U.Amount;break;case EUpgradeKind::Haste:P->CooldownMultiplier=FMath::Max(.25f,P->CooldownMultiplier*(1-U.Amount));break;case EUpgradeKind::Vitality:P->Health->Maximum+=U.Amount;P->Health->Heal(40);break;case EUpgradeKind::Projectiles:P->ExtraProjectiles=FMath::Min(7,P->ExtraProjectiles+1);break;case EUpgradeKind::Knockback:P->Knockback*=1+U.Amount;break;}}
+void ASurvivalGameMode::ApplyUpgrade(const FUpgradeSpec& U){auto* P=Player();if(!P)return;++Ranks.FindOrAdd(U.Kind);switch(U.Kind){case EUpgradeKind::Damage:P->DamageMultiplier+=U.Amount;break;case EUpgradeKind::Speed:P->BaseMoveSpeed*=1+U.Amount;break;case EUpgradeKind::Critical:P->CritChance=FMath::Min(.8f,P->CritChance+U.Amount);break;case EUpgradeKind::Area:P->AreaMultiplier+=U.Amount;break;case EUpgradeKind::Haste:P->CooldownMultiplier=FMath::Max(.25f,P->CooldownMultiplier*(1-U.Amount));break;case EUpgradeKind::Vitality:P->Health->Maximum+=U.Amount;P->Health->Heal(40);break;case EUpgradeKind::Projectiles:P->ExtraProjectiles=FMath::Min(7,P->ExtraProjectiles+1);break;case EUpgradeKind::Knockback:P->Knockback*=1+U.Amount;break;}}
 void ASurvivalHUD::DrawHUD(){Super::DrawHUD();auto* G=Cast<ASurvivalGameMode>(UGameplayStatics::GetGameMode(this));if(!Canvas||!G||!G->Player())return;auto* P=G->Player();const float W=Canvas->SizeX,H=Canvas->SizeY;
  // Palette sampled by eye from the supplied Path of Shadows reference.
  const FLinearColor Ink=FLinearColor::FromSRGBColor(FColor(15,9,20));
@@ -102,7 +105,7 @@ void ASurvivalHUD::DrawHUD(){Super::DrawHUD();auto* G=Cast<ASurvivalGameMode>(UG
  Card(20,612,450,42,Violet);
  Text(FString::Printf(TEXT("Dash %.1fs   Slash %.1fs   Flying Slash %.1fs"),P->DashCooldown,P->Abilities->SlashRemaining,P->Abilities->WaveRemaining),Lilac,36,624);
  Rect(Ink,20,668,1240,32);
- Text(TEXT("WASD move  |  Space dash  |  Auto-slash + flying slash  |  LMB slash  |  Q wave  |  Esc pause"),Parchment,32,676,.95f);
+ Text(TEXT("WASD move  |  Space jump / double jump | Shift dash  |  Auto-slash + flying slash  |  LMB slash  |  Q wave  |  Esc pause"),Parchment,32,676,.95f);
  Card(844,20,416,72,Violet);Text(TEXT("THE HUNT"),Parchment,860,27,.7f,true);
  Text(G->EliteSpawned?TEXT("Defeat the Barrel Crab Daimyo"):TEXT("Survive 3 minutes to summon the elite"),Lilac,860,64,.95f);
  for(const auto& N:G->Numbers){const FVector S=Project(N.Position);if(S.Z>0)DrawText(FString::Printf(TEXT("%.0f%s"),N.Value,N.Critical?TEXT("!"):TEXT("")),N.Critical?Lilac:Parchment,S.X,S.Y,nullptr,(N.Critical?1.5f:1.f)*Scale);}

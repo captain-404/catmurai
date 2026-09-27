@@ -21,9 +21,9 @@ UENUM(BlueprintType) enum class ERarity : uint8 { Common, Rare, Epic, Legendary 
 USTRUCT(BlueprintType) struct FAbilitySpec {
  GENERATED_BODY()
  UPROPERTY(EditAnywhere,BlueprintReadWrite) EAbilityKind Kind=EAbilityKind::Katana;
- UPROPERTY(EditAnywhere,BlueprintReadWrite) float Damage=24;
- UPROPERTY(EditAnywhere,BlueprintReadWrite) float Cooldown=0.8f;
- UPROPERTY(EditAnywhere,BlueprintReadWrite) float Range=260;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite) float Damage=12;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite) float Cooldown=0.95f;
+ UPROPERTY(EditAnywhere,BlueprintReadWrite) float Range=245;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) float Duration=2;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) int32 Level=1;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) int32 ProjectileCount=1;
@@ -76,6 +76,8 @@ public:
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) float WaveRemaining=0;
  UFUNCTION(BlueprintCallable) void Katana();
  UFUNCTION(BlueprintCallable) void FlyingSlash();
+ float PendingSlash=-1;
+ void ApplySlashHit();
 };
 UCLASS() class CATMURAISURVIVAL_API ACatmuraiCharacter : public ACharacter {
  GENERATED_BODY()
@@ -92,7 +94,22 @@ public:
  UPROPERTY() TObjectPtr<class UAnimSequence> RunAnimation;
  UPROPERTY() TObjectPtr<class UAnimSequence> SlashAnimation;
  UPROPERTY(Transient) TObjectPtr<class UAnimSequence> CurrentAnimation;
- float SlashVisualTime=0;
+ virtual void Landed(const FHitResult& Hit) override;
+ UPROPERTY() TObjectPtr<UAnimSequence> JumpStartAnimation;
+ UPROPERTY() TObjectPtr<UAnimSequence> JumpRiseAnimation;
+ UPROPERTY() TObjectPtr<UAnimSequence> JumpFallAnimation;
+ UPROPERTY() TObjectPtr<UAnimSequence> JumpLandAnimation;
+ UPROPERTY() TObjectPtr<UAnimSequence> JumpFlipAnimation;
+ UPROPERTY() TObjectPtr<UAnimSequence> DashAnimation;
+ float BaseMoveSpeed=367,JumpBuffer=0,CoyoteRemaining=0,AirTime=0;
+ float ForwardInput=0,RightInput=0,AnimationAge=0,AnimationRate=1,AnimationBlend=.12f;
+ int32 AirJumpsUsed=0,AirDashesUsed=0,AnimationSerial=0,ConsumedAnimationSerial=-1;
+ bool bJumpHeld=false,bJumpInProgress=false,bAnimationLoop=true,bAirBlend=false,bDashStartedGrounded=false;
+ FVector MoveDirection=FVector::ZeroVector;
+ float FaceTime=0,BlinkPhase=-1,BlinkWait=3;bool bDoubleBlink=false;
+ void PressJump();void ReleaseJump();void TryBufferedJump(bool Fresh);
+ void SetClip(UAnimSequence* Clip,bool Loop,float Blend,bool Restart=false);
+ float SlashVisualTime=0,ActiveSlashDuration=.95f;
  void PlaySlashAnimation();
  UPROPERTY(VisibleAnywhere) TObjectPtr<USpringArmComponent> CameraBoom;
  UPROPERTY(VisibleAnywhere) TObjectPtr<UCameraComponent> Camera;
@@ -167,6 +184,7 @@ public:
  UFUNCTION(BlueprintCallable) void Choose(int32 Index);
  UFUNCTION(BlueprintCallable) void SetRunState(ERunState NewState);
  UFUNCTION(BlueprintCallable) void TogglePause();
+ void TickV10Verification(float Delta);
  void OfferUpgrades(); void BuildArena(); void EnsureDefaults(); void SpawnEnemy(bool Elite=false);
  void EnemyDefeated(ASurvivalEnemy* Enemy); void ApplyUpgrade(const FUpgradeSpec& Upgrade);
  ACatmuraiCharacter* Player() const;

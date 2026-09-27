@@ -27,3 +27,10 @@ Do not duplicate combat/recorder implementation. No independent Claude audit has
 
 ## Shared workspace relocation
 Continue in D:\YoutubeChannel\catmurai. Channel pipeline and exports are in the parent D:\YoutubeChannel. Root AGENTS.md and CLAUDE.md explain layout and ownership. Former OneDrive copies are backups. Files were SHA256-verified on copy; Git history and origin preserved.
+
+
+## Codex Unreal v10 — 2026-09-27
+
+Owner: Codex; branch `codex/catmurai-v10-moves`. Imported the supplied v10 rig, textures, four LODs and nine clips under `unreal/Content/Characters/CatmuraiV10`. Ported movement, jump/flip, dash, delayed slash, face and bounded secondary motion. Enforced the handoff's non-negotiable bind wrist/weapon rotation rule; source translation keys are preserved. Existing survival systems and old assets remain. No Unity or shared plan changes.
+
+Editor build, saved-asset reopen, rendered v10 checks and survival regression passed. Review: `unreal/docs/CATMURAI_V10_IMPORT.md` and `unreal/docs/v10-review/index.html`. Native animation graph replaces the requested editable Blueprint representation; springs have no body collision. Physical gamepad and full balance playthrough remain unverified. No independent Claude review is claimed.
