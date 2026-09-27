@@ -94,6 +94,21 @@ void ASurvivalHUD::DrawHUD(){Super::DrawHUD();auto* G=Cast<ASurvivalGameMode>(UG
  auto Rect=[&](FLinearColor C,float X,float Y,float Width,float Height){DrawRect(C,OX+X*Scale,OY+Y*Scale,Width*Scale,Height*Scale);};
  auto Text=[&](const FString& S,FLinearColor C,float X,float Y,float Size=1.f,bool Brush=false){DrawText(S,C,OX+X*Scale,OY+Y*Scale,Brush?BrushFont.Get():GEngine->GetSmallFont(),Size*Scale);};
  auto Card=[&](float X,float Y,float Width,float Height,FLinearColor Accent){Rect(Accent,X,Y,Width,Height);Rect(Panel,X+1,Y+1,Width-2,Height-2);Rect(Accent,X,Y,4,Height);};
+ // Screen-space telegraphs remain visible in packaged builds and follow the arena floor.
+ for(auto E:G->EnemyPool)if(E&&E->Active){
+  if(E->Windup>0){
+   const float Duration=E->Elite?.85f:E->Spec.Scale>1.2f?.65f:.45f;
+   const float Progress=1-FMath::Clamp(E->Windup/Duration,0.f,1.f);
+   for(int Ring=0;Ring<2;++Ring){const float Radius=125*E->Spec.Scale*(Ring?Progress:1);
+    FVector Last=FVector::ZeroVector;for(int i=0;i<=48;++i){const float A=2*PI*i/48;FVector Point=E->GetActorLocation()+FVector(FMath::Cos(A)*Radius,FMath::Sin(A)*Radius,0);Point.Z=5;const FVector Screen=Project(Point);
+     if(i&&Last.Z>0&&Screen.Z>0)DrawLine(Last.X,Last.Y,Screen.X,Screen.Y,Ring?Parchment:Crimson,2*Scale);Last=Screen;}
+   }
+  }
+  if(E->Elite||E->Health->Current<E->Health->Maximum){
+   const FVector Top=Project(E->Body->Bounds.Origin+FVector(0,0,E->Body->Bounds.BoxExtent.Z+18));
+   if(Top.Z>0){const float BW=(E->Elite?110.f:48.f)*Scale;DrawRect(Ink,Top.X-BW/2,Top.Y,BW,6*Scale);DrawRect(E->Elite?Violet:Crimson,Top.X-BW/2,Top.Y,BW*FMath::Clamp(E->Health->Current/E->Health->Maximum,0.f,1.f),6*Scale);}
+  }
+ }
  Card(20,20,450,182,Crimson);
  Text(TEXT("CATMURAI"),Parchment,36,24,1.15f,true);
  Text(TEXT("MOONFALL / SURVIVAL"),Lilac,36,65,.9f);
@@ -107,7 +122,7 @@ void ASurvivalHUD::DrawHUD(){Super::DrawHUD();auto* G=Cast<ASurvivalGameMode>(UG
  Rect(Ink,20,668,1240,32);
  Text(TEXT("WASD move  |  Space jump / double jump | Shift dash  |  Auto-slash + flying slash  |  LMB slash  |  Q wave  |  Esc pause"),Parchment,32,676,.95f);
  Card(844,20,416,72,Violet);Text(TEXT("THE HUNT"),Parchment,860,27,.7f,true);
- Text(G->EliteSpawned?TEXT("Defeat the Barrel Crab Daimyo"):TEXT("Survive 3 minutes to summon the elite"),Lilac,860,64,.95f);
+ Text(G->EliteSpawned?TEXT("Defeat the Bleep overlord"):TEXT("Survive 3 minutes to summon the elite"),Lilac,860,64,.95f);
  for(const auto& N:G->Numbers){const FVector S=Project(N.Position);if(S.Z>0)DrawText(FString::Printf(TEXT("%.0f%s"),N.Value,N.Critical?TEXT("!"):TEXT("")),N.Critical?Lilac:Parchment,S.X,S.Y,nullptr,(N.Critical?1.5f:1.f)*Scale);}
  if(G->State!=ERunState::Playing){FLinearColor Veil=Ink;Veil.A=.92f;DrawRect(Veil,0,0,W,H);
   if(G->State==ERunState::Choosing){
@@ -116,7 +131,7 @@ void ASurvivalHUD::DrawHUD(){Super::DrawHUD();auto* G=Cast<ASurvivalGameMode>(UG
   }else{
    Card(280,252,720,192,G->State==ERunState::Defeat?Crimson:Violet);
    Text(G->State==ERunState::Victory?TEXT("VICTORY!"):G->State==ERunState::Defeat?TEXT("DEFEAT"):TEXT("PAUSED"),Parchment,310,270,1.4f,true);
-   Text(G->State==ERunState::Victory?TEXT("The barrel has been defeated."):G->State==ERunState::Defeat?TEXT("Even samurai cats need practice."):TEXT("The shadows can wait."),Muted,310,338,1.1f);
+   Text(G->State==ERunState::Victory?TEXT("The Bleep overlord has fallen."):G->State==ERunState::Defeat?TEXT("Even samurai cats need practice."):TEXT("The shadows can wait."),Muted,310,338,1.1f);
    Text(G->State==ERunState::Paused?TEXT("Press Escape to resume"):TEXT("Press R to begin a fresh run"),Lilac,310,389,1.1f);
   }
  }

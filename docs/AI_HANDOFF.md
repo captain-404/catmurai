@@ -40,3 +40,9 @@ Editor build, saved-asset reopen, rendered v10 checks and survival regression pa
 Owner: Codex; branch `codex/bleep-enemies`. Replaced all survival enemy visuals and the elite with the exact refined Bleep blend's static mesh and packed textures. Three authored LODs, original profile sizes/stats/AI, and primitive fallback are preserved. No animation added. Canonical project installed with a previous-source/binary backup.
 
 Editor build, BLEEP_IMPORT_PASS, rendered BLEEP_RUNTIME_PASS, canonical file hashes and canonical CATMURAI_SMOKE_PASS passed. Inspected the four-variant screenshot and corrected export facing. See `unreal/docs/BLEEP_ENEMIES.md`; screenshot at canonical `Saved/BleepReview/bleep-enemies.png`. No independent Claude review or new GitHub upload is claimed.
+
+## Codex combat readability — 2026-09-27
+
+Owner: Codex; branch `codex/combat-readability`. Enemy attacks now commit to their position during 0.45s normal / 0.65s heavy / 0.85s elite warnings. Missed attacks consume recovery. Floor warning circles show reach and elapsed windup; injured enemies and elites show health. Knockback applies inside melee range, interrupts warnings and temporarily suppresses pursuit. High airborne players avoid ground strikes; dash protection remains. Arena bounds constrain knockback. Bleep remains static with no animation added. Boss-facing HUD text now names Bleep.
+
+Build and canonical COMBAT_RUNTIME_PASS passed all seven focused checks (warning, dodge/miss/recovery, stationary windup, close knockback/interrupt, unavoided damage, dash and jump avoidance). Canonical CATMURAI_SMOKE_PASS passed the survival loop. Rendered canonical screenshot inspected at Saved/BleepReview/combat-feedback.png; health indicators draw behind fixed HUD panels. Source/binary backup in canonical Saved/BeforeCombat-*. This is a verified combat pass, not a full human balance playthrough. No independent Claude review or remote upload claimed.

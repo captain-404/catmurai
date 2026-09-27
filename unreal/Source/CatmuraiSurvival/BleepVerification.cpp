@@ -6,10 +6,13 @@
 #include "GameFramework/PlayerController.h"
 #include "UnrealClient.h"
 #include "Misc/Paths.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
 void ASurvivalGameMode::TickBleepReview(float Delta){
  auto* P=Player();if(!P)return;
+ const bool Combat=FParse::Param(FCommandLine::Get(),TEXT("CombatReview"));
  static float Age=0;static int Stage=0;static bool OK=true;
  Age+=Delta;P->Abilities->AutoAttack=false;
  auto Check=[&](bool Pass){OK&=Pass;};
@@ -21,14 +24,33 @@ void ASurvivalGameMode::TickBleepReview(float Delta){
    Check(FMath::Abs(E->Body->Bounds.Origin.Z-E->Body->Bounds.BoxExtent.Z)<3);
   }
   P->SetActorLocation(FVector(350,0,77));P->CameraBoom->TargetArmLength=1150;P->CameraBoom->SetRelativeRotation(FRotator(-18,180,0));P->CameraBoom->bEnableCameraLag=false;
-  if(auto* PC=Cast<APlayerController>(P->GetController()))if(PC->GetHUD())PC->GetHUD()->bShowHUD=false;
-  Stage=1;Age=0;
+  if(auto* PC=Cast<APlayerController>(P->GetController()))if(PC->GetHUD())PC->GetHUD()->bShowHUD=Combat;
+  if(Combat)for(auto E:EnemyPool){E->Windup=.2f;E->Health->Current*=.6f;}Stage=1;Age=0;
  }else if(Stage==1&&Age>3){
   const FString Dir=FPaths::ProjectSavedDir()/TEXT("BleepReview");IFileManager::Get().MakeDirectory(*Dir,true);
-  FScreenshotRequest::RequestScreenshot(Dir/TEXT("bleep-enemies.png"),false,false);Stage=2;Age=0;
+  FScreenshotRequest::RequestScreenshot(Dir/(Combat?TEXT("combat-feedback.png"):TEXT("bleep-enemies.png")),false,false);Stage=2;Age=0;
  }else if(Stage==2&&Age>.5f){
-  auto* E=EnemyPool[0].Get();const FVector Before=E->GetActorLocation();E->Simulate(.1f,P);Check(FVector::Dist2D(Before,E->GetActorLocation())>1);
+  auto* E=EnemyPool[0].Get();E->Windup=0;const FVector Before=E->GetActorLocation();E->Simulate(.1f,P);Check(FVector::Dist2D(Before,E->GetActorLocation())>1);
   E->Hit(100000,FVector::ForwardVector,0,false);Check(!E->Active);E->Activate(Tuning->Enemies[0],FVector(0,0,55),false);Check(E->Active&&E->Body->GetStaticMesh()==E->BleepMesh);
+  if(Combat){
+   auto Probe=[&](bool Pass,const TCHAR* Name){Check(Pass);UE_LOG(LogTemp,Display,TEXT("COMBAT_CHECK %s %s"),Name,Pass?TEXT("PASS"):TEXT("FAIL"));};
+   FEnemySpec Spec=Tuning->Enemies[0];const FVector Start(0,0,55);
+   P->SetActorLocation(FVector(90,0,77));P->ImpactTime=0;P->DashTime=0;P->Health->Current=120;
+   E->Activate(Spec,Start,false);E->AttackTimer=0;E->Simulate(.05f,P);Probe(E->Windup>0,TEXT("warning_before_damage"));
+   const float HP=P->Health->Current;P->SetActorLocation(FVector(500,0,77));for(int i=0;i<12;++i)E->Simulate(.05f,P);
+   Probe(P->Health->Current==HP&&E->AttackTimer>0,TEXT("dodge_causes_miss_and_recovery"));
+   E->Activate(Spec,Start,false);P->SetActorLocation(FVector(90,0,77));E->AttackTimer=0;E->Simulate(.05f,P);const FVector Locked=E->GetActorLocation();E->Simulate(.1f,P);
+   Probe(E->GetActorLocation().Equals(Locked,.01f),TEXT("attack_position_committed"));
+   E->Hit(1,FVector(-1,0,0),300,false);E->Simulate(.05f,P);
+   Probe(E->GetActorLocation().X<-10&&E->Windup==0&&E->AttackTimer>0,TEXT("close_knockback_interrupts"));
+   E->Activate(Spec,Start,false);E->AttackTimer=0;P->ImpactTime=0;for(int i=0;i<12;++i)E->Simulate(.05f,P);
+   Probe(P->Health->Current<HP,TEXT("unavoided_attack_hits"));
+   const float After=P->Health->Current;P->ImpactTime=0;P->DashTime=.2f;E->AttackTimer=0;E->Windup=.01f;E->Simulate(.05f,P);
+   Probe(P->Health->Current==After,TEXT("dash_avoids_strike"));P->DashTime=0;
+   E->Activate(Spec,Start,false);E->Windup=.01f;P->ImpactTime=0;P->SetActorLocation(FVector(90,0,300));E->Simulate(.05f,P);
+   Probe(P->Health->Current==After,TEXT("high_jump_avoids_strike"));
+   UE_LOG(LogTemp,Display,TEXT("COMBAT_RUNTIME_%s"),OK?TEXT("PASS"):TEXT("FAIL"));
+  }
   UE_LOG(LogTemp,Display,TEXT("BLEEP_RUNTIME_%s"),OK?TEXT("PASS"):TEXT("FAIL"));FPlatformMisc::RequestExitWithStatus(false,OK?0:1);
  }
 }

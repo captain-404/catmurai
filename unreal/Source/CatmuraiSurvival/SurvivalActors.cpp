@@ -123,8 +123,33 @@ void ASurvivalEnemy::Activate(const FEnemySpec& InSpec,FVector Location,bool IsE
   Tint(Body,Elite?FLinearColor(.45,.08,.8):Spec.Color);
  }
 }
-void ASurvivalEnemy::Simulate(float Delta,ACatmuraiCharacter* P){if(!Active||!P)return;AttackTimer-=Delta;FVector Offset=P->GetActorLocation()-GetActorLocation();Offset.Z=0;const float Distance=Offset.Size();const FVector Direction=Offset.GetSafeNormal();if(Distance>85*Spec.Scale){FVector Move=Direction*Spec.Speed*Delta+Push*Delta;SetActorLocation(GetActorLocation()+Move);SetActorRotation(Direction.Rotation());}Push*=FMath::Exp(-Delta*8);if(Distance<125*Spec.Scale&&AttackTimer<=0){if(Windup<=0)Windup=.35f;else{Windup-=Delta;DrawDebugCircle(GetWorld(),GetActorLocation(),125*Spec.Scale,24,FColor::Red,false,.06,0,3,FVector::ForwardVector,FVector::RightVector,false);if(Windup<=0){P->ApplyIncomingHit(Spec.Damage*(Elite?2:1));AttackTimer=1.1f;}}}else Windup=0;}
-void ASurvivalEnemy::Hit(float Damage,FVector Direction,float Force,bool Critical){if(!Active)return;auto* G=Run(this);if(!G)return;Push=Direction*Force;FCombatNumber Number;Number.Position=GetActorLocation()+FVector(0,0,70);Number.Value=Damage;Number.Critical=Critical;if(G->Numbers.Num()<100)G->Numbers.Add(Number);DrawDebugSphere(GetWorld(),GetActorLocation(),Critical?55:30,8,Critical?FColor::Yellow:FColor::Cyan,false,.12,0,2);if(auto* P=G->Player())P->CombatCue(Critical?TEXT("Critical"):TEXT("Impact"),GetActorLocation(),Critical);if(Health->Hurt(Damage)){Active=false;SetActorHiddenInGame(true);G->EnemyDefeated(this);}}
+void ASurvivalEnemy::Simulate(float Delta,ACatmuraiCharacter* P){
+ if(!Active||!P)return;
+ AttackTimer=FMath::Max(0.f,AttackTimer-Delta);
+ // Knockback must also move enemies already inside melee range.
+ FVector Location=GetActorLocation()+Push*Delta;
+ Location.X=FMath::Clamp(Location.X,-2250.f,2250.f);Location.Y=FMath::Clamp(Location.Y,-2250.f,2250.f);
+ SetActorLocation(Location);Push*=FMath::Exp(-Delta*8);
+ const FVector Offset=P->GetActorLocation()-Location;
+ const float Distance=Offset.Size2D(),Reach=125*Spec.Scale;
+ if(Windup>0){
+  // Commit to this position: leaving the warning circle makes the attack miss.
+  Windup=FMath::Max(0.f,Windup-Delta);
+  if(Windup<=0){
+   if(Distance<Reach&&FMath::Abs(Offset.Z)<160)P->ApplyIncomingHit(Spec.Damage*(Elite?2:1));
+   AttackTimer=Elite?1.4f:1.1f;
+  }
+  return;
+ }
+ if(Distance<Reach&&AttackTimer<=0){Windup=Elite?.85f:Spec.Scale>1.2f?.65f:.45f;return;}
+ if(Distance>85*Spec.Scale&&Push.Size2D()<60){
+  const FVector Direction=Offset.GetSafeNormal2D();
+  const float Step=FMath::Min(Spec.Speed*Delta,FMath::Max(0.f,Distance-85*Spec.Scale));
+  Location+=Direction*Step;Location.X=FMath::Clamp(Location.X,-2250.f,2250.f);Location.Y=FMath::Clamp(Location.Y,-2250.f,2250.f);
+  SetActorLocation(Location);SetActorRotation(Direction.Rotation());
+ }
+}
+void ASurvivalEnemy::Hit(float Damage,FVector Direction,float Force,bool Critical){if(!Active)return;auto* G=Run(this);if(!G)return;Push=Direction.GetSafeNormal2D()*Force;if(Force>0){Windup=0;AttackTimer=FMath::Max(AttackTimer,.4f);}FCombatNumber Number;Number.Position=GetActorLocation()+FVector(0,0,70);Number.Value=Damage;Number.Critical=Critical;if(G->Numbers.Num()<100)G->Numbers.Add(Number);DrawDebugSphere(GetWorld(),GetActorLocation(),Critical?55:30,8,Critical?FColor::Yellow:FColor::Cyan,false,.12,0,2);if(auto* P=G->Player())P->CombatCue(Critical?TEXT("Critical"):TEXT("Impact"),GetActorLocation(),Critical);if(Health->Hurt(Damage)){Active=false;SetActorHiddenInGame(true);G->EnemyDefeated(this);}}
 AXPOrb::AXPOrb(){PrimaryActorTick.bCanEverTick=false;auto* Mesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("XP"));SetRootComponent(Mesh);Mesh->SetStaticMesh(Shape(TEXT("Sphere")));Mesh->SetWorldScale3D(FVector(.18f));Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
 void AXPOrb::Activate(FVector Location,int32 InValue){Value=InValue;Active=true;Location.Z=35;SetActorLocation(Location);SetActorHiddenInGame(false);Tint(Cast<UStaticMeshComponent>(RootComponent),FLinearColor(.025,1,.4));}
 void AXPOrb::Simulate(float Delta,ACatmuraiCharacter* P){if(!Active||!P)return;const float D=FVector::Dist2D(P->GetActorLocation(),GetActorLocation());if(D<260){FVector Goal=P->GetActorLocation();Goal.Z=35;SetActorLocation(FMath::VInterpTo(GetActorLocation(),Goal,Delta,8));}if(D<70){Active=false;SetActorHiddenInGame(true);if(auto* G=Run(this))G->AddXP(Value);}}
