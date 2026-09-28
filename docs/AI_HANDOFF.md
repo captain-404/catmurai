@@ -52,3 +52,9 @@ Build and canonical COMBAT_RUNTIME_PASS passed all seven focused checks (warning
 Removed the slash's 80% movement penalty: repeated nearby auto-attacks no longer keep the player at walking speed 20%. Ground and airborne movement retain their normal speeds during attacks. Dash can interrupt a slash and clears its pending hit, while preserving the attack cooldown and existing dash limits.
 
 Runtime distance check across 90 frames: free movement 525.9 cm, manual slash 525.6 cm, repeated automatic attacks 526.1 cm. Continuous auto-slash coverage and dash cancellation passed. Canonical CATMURAI_V10_RUNTIME_PASS and CATMURAI_SMOKE_PASS passed after installation. Backup: canonical Saved/BeforeFreeMovement-*. No new enemy animation or remote upload.
+
+## Movement-facing correction — 2026-09-28
+
+Removed the slash condition that disabled movement-based rotation. Automatic katana targeting only turns the character when there is no movement input and horizontal velocity is effectively zero. Moving attacks retain movement-facing and full speed; dash retains its own facing.
+
+Canonical installation completed after the previous approval-service usage-limit interruption. Four-direction tests over real game frames passed with repeated attacks and rear targets; COMBAT_RUNTIME_PASS and CATMURAI_SMOKE_PASS passed in the canonical project. Prior synthetic repeated ticks within a single frame did not exercise rotation correctly; replaced that facing test with real-frame stages. Source and binaries backed up under Saved/BeforeFacing-*. No remote upload.

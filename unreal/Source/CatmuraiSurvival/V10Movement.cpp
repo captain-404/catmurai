@@ -67,7 +67,7 @@ void ACatmuraiCharacter::Tick(float Delta){
  if(Ground&&!bJumpInProgress){CoyoteRemaining=.12f;AirTime=0;}else{CoyoteRemaining=FMath::Max(0.f,CoyoteRemaining-Delta);AirTime+=Delta;}
  TryBufferedJump(false);JumpBuffer=FMath::Max(0.f,JumpBuffer-Delta);
  SlashTime=FMath::Max(0.f,SlashTime-Delta);SlashVisualTime=SlashTime;
- M->bOrientRotationToMovement=SlashTime<=0&&DashTime<=0;
+ M->bOrientRotationToMovement=DashTime<=0;
  M->MaxWalkSpeed=BaseMoveSpeed*(Ground?1.f:.85f);
  M->MaxAcceleration=2449;M->BrakingDecelerationWalking=3367;M->BrakingDecelerationFalling=3367;
  M->GroundFriction=0;M->BrakingFrictionFactor=0;

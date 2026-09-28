@@ -73,8 +73,19 @@ void ASurvivalGameMode::TickBleepReview(float Delta){
    Probe(FreeTravel>400&&ManualTravel>=FreeTravel*.95f&&AutoTravel>=FreeTravel*.95f,TEXT("full_speed_during_attacks"));
    P->GetCharacterMovement()->SetMovementMode(MOVE_Walking);P->DashCooldown=0;P->DashTime=0;P->PlaySlashAnimation();P->Abilities->PendingSlash=.2f;P->Dash();
    Probe(P->DashTime>0&&P->SlashTime==0&&P->Abilities->PendingSlash<0,TEXT("dash_cancels_attack_without_delayed_hit"));
-   UE_LOG(LogTemp,Display,TEXT("COMBAT_RUNTIME_%s"),OK?TEXT("PASS"):TEXT("FAIL"));
+   P->DashTime=0;P->SetActorLocation(FVector(0,0,77));P->GetCharacterMovement()->StopMovementImmediately();P->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+   Stage=3;Age=0;return;
   }
   UE_LOG(LogTemp,Display,TEXT("BLEEP_RUNTIME_%s"),OK?TEXT("PASS"):TEXT("FAIL"));FPlatformMisc::RequestExitWithStatus(false,OK?0:1);
+ } else if(Stage==3){
+  static int Direction=0;static bool AimOK=true;
+  const float Forward=Direction==0?1.f:Direction==2?-1.f:0.f,Right=Direction==1?1.f:Direction==3?-1.f:0.f;
+  P->Forward(Forward);P->Right(Right);P->Abilities->AutoAttack=true;
+  auto* E=EnemyPool[0].Get();E->SetActorLocation(P->GetActorLocation()-P->MoveDirection*100);
+  if(Age>.35f&&Age<.35f+Delta*1.1f){P->SlashTime=0;P->Abilities->SlashRemaining=0;const FVector Facing=P->GetActorForwardVector();P->Abilities->Katana();AimOK&=Facing.Equals(P->GetActorForwardVector(),.001f);}
+  if(Age>.6f){const bool Facing=FVector::DotProduct(P->GetActorForwardVector(),P->MoveDirection.GetSafeNormal2D())>.99f;
+   Check(Facing);UE_LOG(LogTemp,Display,TEXT("FACING direction=%d %s"),Direction,Facing?TEXT("PASS"):TEXT("FAIL"));Age=0;++Direction;
+   if(Direction==4){Check(AimOK);UE_LOG(LogTemp,Display,TEXT("COMBAT_RUNTIME_%s"),OK?TEXT("PASS"):TEXT("FAIL"));FPlatformMisc::RequestExitWithStatus(false,OK?0:1);}
+  }
  }
 }
