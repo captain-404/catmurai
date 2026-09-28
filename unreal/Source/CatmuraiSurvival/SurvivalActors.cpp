@@ -41,7 +41,8 @@ ACatmuraiCharacter::ACatmuraiCharacter(){
  GetMesh()->SetupAttachment(Presentation);
  GetMesh()->SetSkeletalMesh(LoadObject<USkeletalMesh>(nullptr,TEXT("/Game/Characters/CatmuraiV10/SK_Catmurai_v10.SK_Catmurai_v10")));
  GetMesh()->SetRelativeLocation(FVector(0,0,-75));
- GetMesh()->SetRelativeRotation(FRotator(0,90,0));
+ // Imported v10 visual forward is +Y; align it with gameplay +X.
+ GetMesh()->SetRelativeRotation(FRotator(0,-90,0));
  GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  IdleAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV10/A_Catmurai_Idle.A_Catmurai_Idle"));
  RunAnimation=LoadObject<UAnimSequence>(nullptr,TEXT("/Game/Characters/CatmuraiV10/A_Catmurai_Run.A_Catmurai_Run"));

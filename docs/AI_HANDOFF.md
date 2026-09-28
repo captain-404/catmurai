@@ -58,3 +58,7 @@ Runtime distance check across 90 frames: free movement 525.9 cm, manual slash 52
 Removed the slash condition that disabled movement-based rotation. Automatic katana targeting only turns the character when there is no movement input and horizontal velocity is effectively zero. Moving attacks retain movement-facing and full speed; dash retains its own facing.
 
 Canonical installation completed after the previous approval-service usage-limit interruption. Four-direction tests over real game frames passed with repeated attacks and rear targets; COMBAT_RUNTIME_PASS and CATMURAI_SMOKE_PASS passed in the canonical project. Prior synthetic repeated ticks within a single frame did not exercise rotation correctly; replaced that facing test with real-frame stages. Source and binaries backed up under Saved/BeforeFacing-*. No remote upload.
+
+## Correct visible player forward — 2026-09-28
+
+The earlier actor-facing tests missed that the v10 mesh itself faced opposite gameplay forward. Changed only the player mesh relative yaw from +90 to -90 degrees, aligning imported +Y visual forward with actor +X. Inspected fresh rendered run and dash screenshots: the rear of the character is now visible when travelling away from the camera. CATMURAI_V10_RUNTIME_PASS and canonical CATMURAI_SMOKE_PASS passed. Canonical source/binaries installed; backup under Saved/BeforeMeshFacing-20260928-114918; evidence under Saved/MeshFacingReview. No remote upload.
