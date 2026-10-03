@@ -1,4 +1,5 @@
 #include "Survival.h"
+#include "SpellPresentation.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMesh.h"
@@ -93,7 +94,7 @@ void UAbilityComponent::ApplySlashHit(){
  const FAbilitySpec* Spec=Abilities.FindByPredicate([](const FAbilitySpec& S){return S.Kind==EAbilityKind::Katana;});if(!Spec)return;
  const FVector Origin=P->GetActorLocation();const FVector Forward=P->GetActorForwardVector();
  for(auto E:G->EnemyPool)if(E->Active){const FVector Offset=E->GetActorLocation()-Origin;if(Offset.Size2D()<=Spec->Range*P->AreaMultiplier&&FVector::DotProduct(Forward,Offset.GetSafeNormal2D())>FMath::Cos(FMath::DegreesToRadians(55.f))){const bool Critical=FMath::FRand()<P->CritChance;E->Hit(Spec->Damage*P->DamageMultiplier*(Critical?P->CritMultiplier:1),Offset.GetSafeNormal2D(),P->Knockback,Critical);}}
- FVector Previous;for(int i=0;i<=18;i++){const FVector Point=Origin+Forward.RotateAngleAxis(-55+i*110.f/18,FVector::UpVector)*Spec->Range*P->AreaMultiplier;if(i)DrawDebugLine(GetWorld(),Previous,Point,FColor(160,230,255),false,.18f,0,6);Previous=Point;}P->CombatCue(TEXT("Katana"),Origin,false);
+ P->CombatCue(TEXT("Katana"),Origin,false);
 }
 void UAbilityComponent::FlyingSlash(){auto* P=Cast<ACatmuraiCharacter>(GetOwner());auto* G=Run(this);if(!P||!G||G->State!=ERunState::Playing||WaveRemaining>0)return;const FAbilitySpec* S=Abilities.FindByPredicate([](const FAbilitySpec& A){return A.Kind==EAbilityKind::FlyingSlash;});if(!S)return;
  ASurvivalEnemy* Nearest=nullptr;float Best=S->Range;for(auto E:G->EnemyPool)if(E->Active){float D=FVector::Dist2D(E->GetActorLocation(),P->GetActorLocation());if(D<Best){Best=D;Nearest=E;}}if(!Nearest)return;WaveRemaining=FMath::Max(.2f,S->Cooldown*P->CooldownMultiplier);const FVector Aim=(Nearest->GetActorLocation()-P->GetActorLocation()).GetSafeNormal2D();const int32 Count=FMath::Clamp(S->ProjectileCount+P->ExtraProjectiles,1,8);
@@ -150,13 +151,26 @@ void ASurvivalEnemy::Simulate(float Delta,ACatmuraiCharacter* P){
   SetActorLocation(Location);SetActorRotation(Direction.Rotation());
  }
 }
-void ASurvivalEnemy::Hit(float Damage,FVector Direction,float Force,bool Critical){if(!Active)return;auto* G=Run(this);if(!G)return;Push=Direction.GetSafeNormal2D()*Force;if(Force>0){Windup=0;AttackTimer=FMath::Max(AttackTimer,.4f);}FCombatNumber Number;Number.Position=GetActorLocation()+FVector(0,0,70);Number.Value=Damage;Number.Critical=Critical;if(G->Numbers.Num()<100)G->Numbers.Add(Number);DrawDebugSphere(GetWorld(),GetActorLocation(),Critical?55:30,8,Critical?FColor::Yellow:FColor::Cyan,false,.12,0,2);if(auto* P=G->Player())P->CombatCue(Critical?TEXT("Critical"):TEXT("Impact"),GetActorLocation(),Critical);if(Health->Hurt(Damage)){Active=false;SetActorHiddenInGame(true);G->EnemyDefeated(this);}}
+void ASurvivalEnemy::Hit(float Damage,FVector Direction,float Force,bool Critical){if(!Active)return;auto* G=Run(this);if(!G)return;Push=Direction.GetSafeNormal2D()*Force;if(Force>0){Windup=0;AttackTimer=FMath::Max(AttackTimer,.4f);}FCombatNumber Number;Number.Position=GetActorLocation()+FVector(0,0,70);Number.Value=Damage;Number.Critical=Critical;if(G->Numbers.Num()<100)G->Numbers.Add(Number);if(auto* P=G->Player())P->CombatCue(Critical?TEXT("Critical"):TEXT("Impact"),GetActorLocation(),Critical);if(Health->Hurt(Damage)){Active=false;SetActorHiddenInGame(true);G->EnemyDefeated(this);}}
 AXPOrb::AXPOrb(){PrimaryActorTick.bCanEverTick=false;auto* Mesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("XP"));SetRootComponent(Mesh);Mesh->SetStaticMesh(Shape(TEXT("Sphere")));Mesh->SetWorldScale3D(FVector(.18f));Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
 void AXPOrb::Activate(FVector Location,int32 InValue){Value=InValue;Active=true;Location.Z=35;SetActorLocation(Location);SetActorHiddenInGame(false);Tint(Cast<UStaticMeshComponent>(RootComponent),FLinearColor(.025,1,.4));}
 void AXPOrb::Simulate(float Delta,ACatmuraiCharacter* P){if(!Active||!P)return;const float D=FVector::Dist2D(P->GetActorLocation(),GetActorLocation());if(D<260){FVector Goal=P->GetActorLocation();Goal.Z=35;SetActorLocation(FMath::VInterpTo(GetActorLocation(),Goal,Delta,8));}if(D<70){Active=false;SetActorHiddenInGame(true);if(auto* G=Run(this))G->AddXP(Value);}}
 ACombatProjectile::ACombatProjectile(){PrimaryActorTick.bCanEverTick=true;auto* Root=CreateDefaultSubobject<USceneComponent>(TEXT("Root"));SetRootComponent(Root);}
-void ACombatProjectile::Tick(float Delta){Super::Tick(Delta);auto* G=Run(this);if(!G||G->State!=ERunState::Playing)return;const FVector Old=GetActorLocation();const FVector Next=Old+Direction*1000*Delta;SetActorLocation(Next);const FVector Side=FVector::CrossProduct(Direction,FVector::UpVector)*70;DrawDebugLine(GetWorld(),Next-Side,Next+Direction*30,FColor::Cyan,false,.06,0,7);DrawDebugLine(GetWorld(),Next+Direction*30,Next+Side,FColor(170,80,255),false,.06,0,7);for(auto E:G->EnemyPool)if(E->Active&&!Struck.Contains(E)&&FMath::PointDistToSegment(E->GetActorLocation(),Old,Next)<85*E->Spec.Scale){Struck.Add(E);E->Hit(Damage,Direction,180,false);}Life-=Delta;if(Life<=0)Destroy();}
+static void InitializeProjectileVisual(ACombatProjectile* Projectile);
+void ACombatProjectile::Tick(float Delta){Super::Tick(Delta);auto* G=Run(this);if(!G||G->State!=ERunState::Playing)return;if(!VisualAttempted){VisualAttempted=true;InitializeProjectileVisual(this);}const FVector Old=GetActorLocation();const FVector Next=Old+Direction*1000*Delta;SetActorLocation(Next);for(auto E:G->EnemyPool)if(E->Active&&!Struck.Contains(E)&&FMath::PointDistToSegment(E->GetActorLocation(),Old,Next)<85*E->Spec.Scale){Struck.Add(E);E->Hit(Damage,Direction,180,false);}Life-=Delta;if(Life<=0)Destroy();}
 
 
 
+
+
+void ACombatProjectile::BeginPlay(){
+ Super::BeginPlay();
+}
+
+static void InitializeProjectileVisual(ACombatProjectile* Projectile){
+ auto& Visual=Projectile->Visual;
+ Visual=ASpellEffect::Spawn(Projectile,TEXT("spell_shadow_claw_crescent"),Projectile->GetActorLocation()+FVector(0,0,-25),160,Projectile->Life,Projectile->Direction.Rotation().Yaw);
+ if(Visual)Visual->AttachToActor(Projectile,FAttachmentTransformRules::KeepWorldTransform);
+}
+void ACombatProjectile::EndPlay(const EEndPlayReason::Type Reason){if(IsValid(Visual))Visual->Destroy();Super::EndPlay(Reason);}
 

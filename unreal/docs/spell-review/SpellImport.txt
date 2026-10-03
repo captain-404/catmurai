@@ -1,0 +1,2 @@
+[2026.10.03-12.32.17:893][  0]LogPython: SPELL_ASSETS_PASS: 15 textures, RGB black key, alpha transparency, effect/UI materials, presentation data asset
+[2026.10.03-12.32.17:893][  0]LogInit: Display: Success - 0 error(s), 0 warning(s)

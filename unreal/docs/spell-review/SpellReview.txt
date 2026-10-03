@@ -1,0 +1,31 @@
+[2026.10.03-12.35.50:505][  1]LogTemp: Display: SPELL_CHECK complete_presentation_library PASS
+[2026.10.03-12.35.50:505][  1]LogTemp: Display: SPELL_CHECK spell_ember_potion PASS
+[2026.10.03-12.35.50:505][  1]LogTemp: Display: SPELL_CHECK spell_frost_dash PASS
+[2026.10.03-12.35.50:505][  1]LogTemp: Display: SPELL_CHECK spell_glacial_paw PASS
+[2026.10.03-12.35.50:505][  1]LogTemp: Display: SPELL_CHECK spell_guardian_eye_ward PASS
+[2026.10.03-12.35.50:505][  1]LogTemp: Display: SPELL_CHECK spell_infernal_moon PASS
+[2026.10.03-12.35.50:505][  1]LogTemp: Display: SPELL_CHECK spell_moonlit_pounce PASS
+[2026.10.03-12.35.50:505][  1]LogTemp: Display: SPELL_CHECK spell_phantom_claw_rend PASS
+[2026.10.03-12.35.50:505][  1]LogTemp: Display: SPELL_CHECK spell_sakura_bloom PASS
+[2026.10.03-12.35.50:507][  1]LogTemp: Display: SPELL_CHECK spell_shadow_bomb PASS
+[2026.10.03-12.35.50:507][  1]LogTemp: Display: SPELL_CHECK spell_shadow_claw_crescent PASS
+[2026.10.03-12.35.50:507][  1]LogTemp: Display: SPELL_CHECK spell_shadow_shuriken_trio PASS
+[2026.10.03-12.35.50:507][  1]LogTemp: Display: SPELL_CHECK spell_shadow_trio_dash PASS
+[2026.10.03-12.35.50:507][  1]LogTemp: Display: SPELL_CHECK spell_solar_pounce PASS
+[2026.10.03-12.35.50:507][  1]LogTemp: Display: SPELL_CHECK spell_spirit_bell PASS
+[2026.10.03-12.35.50:507][  1]LogTemp: Display: SPELL_CHECK spell_verdant_lotus_paw PASS
+[2026.10.03-12.35.50:507][  1]LogTemp: Display: SPELL_CHECK RGB_and_alpha_background_modes PASS
+[2026.10.03-12.35.50:507][  1]LogTemp: Display: SPELL_CHECK effect_material_and_no_gameplay_collision PASS
+[2026.10.03-12.35.50:507][  1]LogTemp: Display: SPELL_CHECK effect_animated_scale_and_alpha PASS
+[2026.10.03-12.35.50:507][  1]LogTemp: Display: SPELL_CHECK effect_lifetime_cleanup PASS
+[2026.10.03-12.35.53:112][386]LogTemp: Display: SPELL_CHECK katana_hit_timed_to_animation PASS
+[2026.10.03-12.35.53:817][531]LogTemp: Display: SPELL_CHECK dash_and_trail_active PASS
+[2026.10.03-12.35.54:635][668]LogTemp: Display: SPELL_CHECK crescent_projectile_cast PASS
+[2026.10.03-12.35.55:238][775]LogTemp: Display: SPELL_CHECK upgrade_choices PASS
+[2026.10.03-12.35.55:238][775]LogTemp: Display: SPELL_CHECK effects_freeze_during_upgrade_pause PASS
+[2026.10.03-12.35.56:041][950]LogTemp: Display: SPELL_CHECK upgrade_and_resume PASS
+[2026.10.03-12.35.56:443][ 41]LogTemp: Display: SPELL_CHECK projectile_visual_attached PASS
+[2026.10.03-12.35.56:443][ 41]LogTemp: Display: SPELL_CHECK projectile_destroy_cleans_visual PASS
+[2026.10.03-12.35.56:447][ 41]LogTemp: Display: SPELL_CHECK dense_wave_effect_budget PASS
+[2026.10.03-12.35.57:944][362]LogTemp: Display: SPELL_CHECK all_transient_effects_reclaimed PASS
+[2026.10.03-12.35.57:945][362]LogTemp: Display: SPELL_RUNTIME_PASS

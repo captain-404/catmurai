@@ -1,0 +1,99 @@
+{
+  "source": "D:\\YoutubeChannel\\Factory\\AI-Images\\Spells",
+  "runtime_size": [
+    512,
+    512
+  ],
+  "images": [
+    {
+      "file": "spell_ember_potion.png",
+      "sha256": "9ea301e918bfc08f4900ad97072209200d1ac0ff8673c3e6ceb398e88c13febe",
+      "use": "Vitality upgrade icon",
+      "black_key": true
+    },
+    {
+      "file": "spell_frost_dash.png",
+      "sha256": "2124a97c6e4b2aa9533244b970d500319755ac9e13be269b366654d3d6a5b68d",
+      "use": "Dash icon and departure effect",
+      "black_key": true
+    },
+    {
+      "file": "spell_glacial_paw.png",
+      "sha256": "62026342deebb8004b2df65b995fd7f5217d95d7e001b043c020c4e604d5c7cb",
+      "use": "Knockback upgrade icon and hit effect",
+      "black_key": true
+    },
+    {
+      "file": "spell_guardian_eye_ward.png",
+      "sha256": "df7a755409b2e4f2ecc1b2ad3f38f31cb603aa66efa8b6ca100e90088122d12a",
+      "use": "Hurt effect",
+      "black_key": false
+    },
+    {
+      "file": "spell_infernal_moon.png",
+      "sha256": "33db5f762b9d2bafcaae783ed1fe2f35316052d9c89c4627dc7d99ee97ff9ba4",
+      "use": "Damage upgrade icon and elite cue",
+      "black_key": true
+    },
+    {
+      "file": "spell_moonlit_pounce.png",
+      "sha256": "bffac34707910e171157aa3ad5081f0657c1cf58dbdbebbb99d953171c3602c5",
+      "use": "Jump effect",
+      "black_key": false
+    },
+    {
+      "file": "spell_phantom_claw_rend.png",
+      "sha256": "0c840dcc3ef95fa9dc4f792668890ffb8abb97d0e17577218b90c148b9fe99cd",
+      "use": "Katana icon and effect; critical upgrade icon",
+      "black_key": false
+    },
+    {
+      "file": "spell_sakura_bloom.png",
+      "sha256": "8c2a4b3cddfb0de4b1961dc9ed4c522d9160225e6f648e4f57821b6d05ae21c1",
+      "use": "Area upgrade icon and upgrade effect",
+      "black_key": false
+    },
+    {
+      "file": "spell_shadow_bomb.png",
+      "sha256": "3e2e0cb2566c9018509a1ea07dbeddddced6db16cdea856460dba1b1465cb714",
+      "use": "Enemy death effect",
+      "black_key": true
+    },
+    {
+      "file": "spell_shadow_claw_crescent.png",
+      "sha256": "fe274aa50d4d165d7a8289877aae04eef955d5cba824d5b6a1de36c9b2e74cf2",
+      "use": "Flying slash icon and projectile effect",
+      "black_key": false
+    },
+    {
+      "file": "spell_shadow_shuriken_trio.png",
+      "sha256": "7f861a8764069633c467859dfc43b685adbb3c5f0e52ef49489056b97640caa3",
+      "use": "Projectile upgrade icon",
+      "black_key": false
+    },
+    {
+      "file": "spell_shadow_trio_dash.png",
+      "sha256": "2166bfb2303851c0540dc26aa32fb8b8438c790976f0dd923449bf559debc043",
+      "use": "Speed upgrade icon and dash trail",
+      "black_key": true
+    },
+    {
+      "file": "spell_solar_pounce.png",
+      "sha256": "88c1476010ba547e077b231845d40887cf6f82c06cc2dacf43e1497ce00695b7",
+      "use": "Critical impact and double jump effect",
+      "black_key": true
+    },
+    {
+      "file": "spell_spirit_bell.png",
+      "sha256": "9d118453208789c149975830146cb1bbbb9cd56b99a57df5591febbae3472a0b",
+      "use": "Haste upgrade icon",
+      "black_key": true
+    },
+    {
+      "file": "spell_verdant_lotus_paw.png",
+      "sha256": "34223f13b812456fce1bd06c7123ee70e3382c32d9d17bfecc858d5678265ad2",
+      "use": "Healing upgrade effect",
+      "black_key": true
+    }
+  ]
+}

@@ -35,6 +35,7 @@ void ACatmuraiCharacter::TryBufferedJump(bool Fresh){
  M->Velocity.Z=FMath::Sqrt(2.f*3061.f*168.f*(First?1.f:.9f));
  M->GravityScale=3061.f/980.f;JumpBuffer=0;CoyoteRemaining=0;bJumpInProgress=true;
  SetClip(First?JumpStartAnimation.Get():JumpFlipAnimation.Get(),false,First?.05f:.04f,true);
+ CombatCue(First?TEXT("Jump"):TEXT("DoubleJump"),GetActorLocation(),false);
  UE_LOG(LogTemp,Display,TEXT("V10_MOVE %s vz=%.2f"),First?TEXT("Jump"):TEXT("DoubleJump"),M->Velocity.Z);
 }
 void ACatmuraiCharacter::Landed(const FHitResult& Hit){
@@ -47,7 +48,7 @@ void ACatmuraiCharacter::Dash(){
  if(!M->IsMovingOnGround())++AirDashesUsed;
  // Dash cancels the slash, including a strike whose windup has not completed.
  SlashTime=0;SlashVisualTime=0;Abilities->PendingSlash=-1;
- bDashStartedGrounded=M->IsMovingOnGround();DashTime=.2f;DashCooldown=.6f;DashDirection=MoveDirection.GetSafeNormal2D();
+ bDashStartedGrounded=M->IsMovingOnGround();DashTrailTimer=0;DashTime=.2f;DashCooldown=.6f;DashDirection=MoveDirection.GetSafeNormal2D();
  if(DashDirection.IsNearlyZero())DashDirection=GetActorForwardVector();SetActorRotation(DashDirection.Rotation());
  M->Velocity=DashDirection*3060;M->GravityScale=0;SetClip(DashAnimation,false,.03f,true);CombatCue(TEXT("Dash"),GetActorLocation(),false);
 }
@@ -72,6 +73,7 @@ void ACatmuraiCharacter::Tick(float Delta){
  M->MaxAcceleration=2449;M->BrakingDecelerationWalking=3367;M->BrakingDecelerationFalling=3367;
  M->GroundFriction=0;M->BrakingFrictionFactor=0;
  if(DashTime>0){
+  DashTrailTimer-=Delta;if(DashTrailTimer<=0){DashTrailTimer=.05f;CombatCue(TEXT("DashTrail"),GetActorLocation(),false);}
   // MOVE_Flying provides a swept, collision-aware constant-speed burst with no gravity.
   if(M->MovementMode!=MOVE_Flying){M->SetMovementMode(MOVE_Flying);}
   M->MaxFlySpeed=3060;M->BrakingDecelerationFlying=0;M->Velocity=DashDirection*3060;M->GravityScale=0;

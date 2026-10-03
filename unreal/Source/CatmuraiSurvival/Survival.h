@@ -13,6 +13,8 @@ class UCameraComponent;
 class ASurvivalEnemy;
 class AXPOrb;
 class ACatmuraiCharacter;
+class USpellPresentation;
+class ASpellEffect;
 
 UENUM(BlueprintType) enum class ERunState : uint8 { Playing, Choosing, Paused, Victory, Defeat };
 UENUM(BlueprintType) enum class EAbilityKind : uint8 { Katana, FlyingSlash };
@@ -120,11 +122,11 @@ public:
  UPROPERTY(EditAnywhere,BlueprintReadWrite) float CritMultiplier=2;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) float Knockback=220;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) float DashCooldown=0;
- float DashTime=0,SlashTime=0,ImpactTime=0; FVector DashDirection;
+ float DashTime=0,SlashTime=0,ImpactTime=0,DashTrailTimer=0; FVector DashDirection;
  int32 ExtraProjectiles=0;
  UFUNCTION(BlueprintCallable) void Dash();
  UFUNCTION(BlueprintCallable) void ApplyIncomingHit(float Amount);
- UFUNCTION(BlueprintImplementableEvent) void CombatCue(FName Cue,FVector Location,bool Critical);
+ UFUNCTION(BlueprintNativeEvent) void CombatCue(FName Cue,FVector Location,bool Critical);
  void Forward(float Value); void Right(float Value); void Attack(); void Special();
  void Choice1(); void Choice2(); void Choice3(); void PauseRun(); void Retry();
 };
@@ -155,6 +157,10 @@ UCLASS() class CATMURAISURVIVAL_API ACombatProjectile : public AActor {
  GENERATED_BODY()
 public:
  ACombatProjectile();
+ virtual void BeginPlay() override;
+ virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+ UPROPERTY(Transient) TObjectPtr<ASpellEffect> Visual;
+ bool VisualAttempted=false;
  virtual void Tick(float Delta) override;
  FVector Direction=FVector::ForwardVector; float Damage=18; float Life=2;
  TSet<TWeakObjectPtr<ASurvivalEnemy>> Struck;
@@ -185,6 +191,9 @@ public:
  UFUNCTION(BlueprintCallable) void Choose(int32 Index);
  UFUNCTION(BlueprintCallable) void SetRunState(ERunState NewState);
  UFUNCTION(BlueprintCallable) void TogglePause();
+ UPROPERTY() TObjectPtr<USpellPresentation> SpellArt;
+ TArray<TWeakObjectPtr<ASpellEffect>> SpellEffects;
+ void TickSpellReview(float Delta);
  void TickV10Verification(float Delta); void TickBleepReview(float Delta);
  void OfferUpgrades(); void BuildArena(); void EnsureDefaults(); void SpawnEnemy(bool Elite=false);
  void EnemyDefeated(ASurvivalEnemy* Enemy); void ApplyUpgrade(const FUpgradeSpec& Upgrade);
@@ -195,6 +204,6 @@ UCLASS() class CATMURAISURVIVAL_API ASurvivalHUD : public AHUD {
  GENERATED_BODY()
 public:
  UPROPERTY(Transient) TObjectPtr<class UFont> BrushFont;
+ UPROPERTY(Transient) TMap<FName,TObjectPtr<class UMaterialInstanceDynamic>> SpellIcons;
  virtual void DrawHUD() override;
 };
-

@@ -1,4 +1,6 @@
 #include "Survival.h"
+#include "SpellPresentation.h"
+#include "Engine/Texture2D.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/LightComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -32,7 +34,7 @@ void ASurvivalGameMode::EnsureDefaults(){if(Tuning)return;Tuning=NewObject<USurv
  Add(TEXT("Echoing Crescent"),TEXT("+1 flying slash projectile"),EUpgradeKind::Projectiles,1,ERarity::Epic);
  Add(TEXT("Paw Power"),TEXT("+30% knockback"),EUpgradeKind::Knockback,.3,ERarity::Common);
 }
-void ASurvivalGameMode::BeginPlay(){Super::BeginPlay();EnsureDefaults();BuildArena();if(auto* P=Player()){P->SetActorLocation(FVector(0,0,100));if(Tuning->Abilities.Num())P->Abilities->Abilities=Tuning->Abilities;}UE_LOG(LogTemp,Display,TEXT("CATMURAI: Survival vertical slice started"));}
+void ASurvivalGameMode::BeginPlay(){Super::BeginPlay();EnsureDefaults();SpellArt=LoadObject<USpellPresentation>(nullptr,TEXT("/Game/Spells/DA_SpellPresentation.DA_SpellPresentation"));BuildArena();if(auto* P=Player()){P->SetActorLocation(FVector(0,0,100));if(Tuning->Abilities.Num())P->Abilities->Abilities=Tuning->Abilities;}UE_LOG(LogTemp,Display,TEXT("CATMURAI: Survival vertical slice started"));}
 void ASurvivalGameMode::BuildArena(){
  UStaticMesh* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
  auto Box=[this,Cube](FVector Position,FVector Scale,FLinearColor Color){auto* A=GetWorld()->SpawnActor<AStaticMeshActor>(Position,FRotator::ZeroRotator);A->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);A->GetStaticMeshComponent()->SetStaticMesh(Cube);A->SetActorScale3D(Scale);A->GetStaticMeshComponent()->SetCollisionProfileName(TEXT("BlockAll"));if(auto* M=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_Prototype.M_Prototype")))A->GetStaticMeshComponent()->SetMaterial(0,M);if(auto* M=A->GetStaticMeshComponent()->CreateAndSetMaterialInstanceDynamic(0))M->SetVectorParameterValue(TEXT("Color"),Color);return A;};
@@ -52,7 +54,7 @@ void ASurvivalGameMode::SpawnEnemy(bool IsElite){auto* P=Player();if(!P||Tuning-
  if(FVector::Dist2D(Location,P->GetActorLocation())<750)Location=FVector(-FMath::Sign(P->GetActorLocation().X)*1800,-FMath::Sign(P->GetActorLocation().Y)*1800,55);
  E->Activate(Spec,Location,IsElite);DirectorBudget=FMath::Max(0.f,DirectorBudget-Spec.Threat);
 }
-void ASurvivalGameMode::Tick(float Delta){Super::Tick(Delta);if(FParse::Param(FCommandLine::Get(),TEXT("BleepReview"))){TickBleepReview(Delta);return;}if(FParse::Param(FCommandLine::Get(),TEXT("CatmuraiV10Test"))){TickV10Verification(Delta);return;}if(State!=ERunState::Playing)return;auto* P=Player();if(!P)return;RunTime+=Delta;DirectorTimer-=Delta;DirectorBudget=FMath::Min(12.f,DirectorBudget+Delta*(1.5f+RunTime/35+Level*.15f));
+void ASurvivalGameMode::Tick(float Delta){Super::Tick(Delta);if(FParse::Param(FCommandLine::Get(),TEXT("SpellReview"))){TickSpellReview(Delta);return;}if(FParse::Param(FCommandLine::Get(),TEXT("BleepReview"))){TickBleepReview(Delta);return;}if(FParse::Param(FCommandLine::Get(),TEXT("CatmuraiV10Test"))){TickV10Verification(Delta);return;}if(State!=ERunState::Playing)return;auto* P=Player();if(!P)return;RunTime+=Delta;DirectorTimer-=Delta;DirectorBudget=FMath::Min(12.f,DirectorBudget+Delta*(1.5f+RunTime/35+Level*.15f));
  if(DirectorTimer<=0){DirectorTimer=.4f;if(DirectorBudget>=3&&ActiveCount()<Tuning->PopulationCap)SpawnEnemy();}
  if(RunTime>=Tuning->RunDuration&&!EliteSpawned){if(ActiveCount()>=Tuning->PopulationCap){for(auto E:EnemyPool)if(E->Active){E->Active=false;E->SetActorHiddenInGame(true);break;}}SpawnEnemy(true);EliteSpawned=true;P->CombatCue(TEXT("EliteIntro"),P->GetActorLocation(),false);}
  AITimer+=Delta;if(AITimer>=.05f){const float Step=FMath::Min(.1f,AITimer);AITimer=0;for(auto E:EnemyPool){if(E)E->Simulate(Step,P);if(State!=ERunState::Playing)break;}for(auto Orb:OrbPool){Orb->Simulate(Step,P);if(State!=ERunState::Playing)break;}}
@@ -73,7 +75,7 @@ void ASurvivalGameMode::SetRunState(ERunState NewState){State=NewState;UGameplay
 void ASurvivalGameMode::TogglePause(){if(State==ERunState::Playing)SetRunState(ERunState::Paused);else if(State==ERunState::Paused)SetRunState(ERunState::Playing);}
 void ASurvivalGameMode::AddXP(int32 Amount){if(Amount<=0||State==ERunState::Victory||State==ERunState::Defeat)return;XP+=Amount;if(State==ERunState::Playing&&XP>=5+Level*3){XP-=5+Level*3;++Level;OfferUpgrades();}}
 void ASurvivalGameMode::OfferUpgrades(){Choices.Reset();TArray<FUpgradeSpec> Eligible;for(const auto& U:Tuning->Upgrades)if(Ranks.FindRef(U.Kind)<U.MaxRank)Eligible.Add(U);while(Choices.Num()<3&&Eligible.Num()){const int32 Index=FMath::RandRange(0,Eligible.Num()-1);Choices.Add(Eligible[Index]);Eligible.RemoveAt(Index);}if(Choices.IsEmpty()){if(auto* P=Player())P->Health->Heal(20);return;}SetRunState(ERunState::Choosing);if(auto* P=Player())P->CombatCue(TEXT("LevelUp"),P->GetActorLocation(),false);}
-void ASurvivalGameMode::Choose(int32 Index){if(State!=ERunState::Choosing||!Choices.IsValidIndex(Index))return;ApplyUpgrade(Choices[Index]);Choices.Reset();SetRunState(ERunState::Playing);if(XP>=5+Level*3){XP-=5+Level*3;++Level;OfferUpgrades();}}
+void ASurvivalGameMode::Choose(int32 Index){if(State!=ERunState::Choosing||!Choices.IsValidIndex(Index))return;const bool Heal=Choices[Index].Kind==EUpgradeKind::Vitality;ApplyUpgrade(Choices[Index]);Choices.Reset();SetRunState(ERunState::Playing);if(auto* P=Player())P->CombatCue(Heal?TEXT("Heal"):TEXT("Upgrade"),P->GetActorLocation(),false);if(XP>=5+Level*3){XP-=5+Level*3;++Level;OfferUpgrades();}}
 void ASurvivalGameMode::ApplyUpgrade(const FUpgradeSpec& U){auto* P=Player();if(!P)return;++Ranks.FindOrAdd(U.Kind);switch(U.Kind){case EUpgradeKind::Damage:P->DamageMultiplier+=U.Amount;break;case EUpgradeKind::Speed:P->BaseMoveSpeed*=1+U.Amount;break;case EUpgradeKind::Critical:P->CritChance=FMath::Min(.8f,P->CritChance+U.Amount);break;case EUpgradeKind::Area:P->AreaMultiplier+=U.Amount;break;case EUpgradeKind::Haste:P->CooldownMultiplier=FMath::Max(.25f,P->CooldownMultiplier*(1-U.Amount));break;case EUpgradeKind::Vitality:P->Health->Maximum+=U.Amount;P->Health->Heal(40);break;case EUpgradeKind::Projectiles:P->ExtraProjectiles=FMath::Min(7,P->ExtraProjectiles+1);break;case EUpgradeKind::Knockback:P->Knockback*=1+U.Amount;break;}}
 void ASurvivalHUD::DrawHUD(){Super::DrawHUD();auto* G=Cast<ASurvivalGameMode>(UGameplayStatics::GetGameMode(this));if(!Canvas||!G||!G->Player())return;auto* P=G->Player();const float W=Canvas->SizeX,H=Canvas->SizeY;
  // Palette sampled by eye from the supplied Path of Shadows reference.
@@ -117,8 +119,23 @@ void ASurvivalHUD::DrawHUD(){Super::DrawHUD();auto* G=Cast<ASurvivalGameMode>(UG
  Text(FString::Printf(TEXT("HP %.0f / %.0f    Level %d   XP %d / %d"),P->Health->Current,P->Health->Maximum,G->Level,G->XP,5+G->Level*3),Parchment,36,121);
  Rect(Ink,36,143,410,6);Rect(Violet,36,143,410*FMath::Clamp(float(G->XP)/(5+G->Level*3),0.f,1.f),6);
  Text(FString::Printf(TEXT("%02d:%02d  |  Enemies %d  |  Defeated %d"),int(G->RunTime)/60,int(G->RunTime)%60,G->ActiveCount(),G->Kills),Muted,36,162);
- Card(20,612,450,42,Violet);
- Text(FString::Printf(TEXT("Dash %.1fs   Slash %.1fs   Flying Slash %.1fs"),P->DashCooldown,P->Abilities->SlashRemaining,P->Abilities->WaveRemaining),Lilac,36,624);
+ auto Icon=[&](FName Name,float X,float Y,float Size,float Alpha=1.f){
+  if(!G->SpellArt||!G->SpellArt->IconMaterial)return;
+  auto* T=G->SpellArt->Texture(Name);if(!T)return;
+  auto& M=SpellIcons.FindOrAdd(Name);if(!M){M=UMaterialInstanceDynamic::Create(G->SpellArt->IconMaterial,this);M->SetTextureParameterValue(TEXT("SpellTexture"),T);M->SetScalarParameterValue(TEXT("BlackKey"),G->SpellArt->BlackKeys.FindRef(Name));}
+  M->SetScalarParameterValue(TEXT("Fade"),Alpha);DrawMaterialSimple(M,OX+X*Scale,OY+Y*Scale,Size*Scale,Size*Scale);
+ };
+ auto Skill=[&](FName Art,const TCHAR* Name,const TCHAR* Key,float Remaining,float Total,float X){
+  const bool Ready=Remaining<=0;Card(X,578,244,76,Ready?Violet:Muted);
+  Icon(Art,X+6,584,62,Ready?1.f:.5f);
+  Text(Name,Ready?Parchment:Muted,X+78,589,.95f);
+  Text(FString::Printf(TEXT("%s  |  %s"),Key,Ready?TEXT("READY"):*FString::Printf(TEXT("%.1fs"),Remaining)),Lilac,X+78,614,.9f);
+  Rect(Ink,X+78,638,152,4);Rect(Ready?Violet:Crimson,X+78,638,152*(1-FMath::Clamp(Remaining/FMath::Max(.01f,Total),0.f,1.f)),4);
+ };
+ float SlashTotal=.95f,WaveTotal=3.5f;for(const auto& S:P->Abilities->Abilities){if(S.Kind==EAbilityKind::Katana)SlashTotal=FMath::Max(.12f,S.Cooldown*P->CooldownMultiplier);else if(S.Kind==EAbilityKind::FlyingSlash)WaveTotal=FMath::Max(.2f,S.Cooldown*P->CooldownMultiplier);}
+ Skill(TEXT("spell_phantom_claw_rend"),TEXT("PHANTOM CLAW"),TEXT("LMB / Auto"),P->Abilities->SlashRemaining,SlashTotal,20);
+ Skill(TEXT("spell_shadow_claw_crescent"),TEXT("SHADOW CRESCENT"),TEXT("Q / Auto"),P->Abilities->WaveRemaining,WaveTotal,276);
+ Skill(TEXT("spell_frost_dash"),TEXT("FROST DASH"),TEXT("Shift"),P->DashCooldown,.6f,532);
  Rect(Ink,20,668,1240,32);
  Text(TEXT("WASD move  |  Space jump / double jump | Shift dash  |  Auto-slash + flying slash  |  LMB slash  |  Q wave  |  Esc pause"),Parchment,32,676,.95f);
  Card(844,20,416,72,Violet);Text(TEXT("THE HUNT"),Parchment,860,27,.7f,true);
@@ -127,7 +144,9 @@ void ASurvivalHUD::DrawHUD(){Super::DrawHUD();auto* G=Cast<ASurvivalGameMode>(UG
  if(G->State!=ERunState::Playing){FLinearColor Veil=Ink;Veil.A=.92f;DrawRect(Veil,0,0,W,H);
   if(G->State==ERunState::Choosing){
    Text(TEXT("A NEW TECHNIQUE"),Parchment,320,166,1.1f,true);Text(TEXT("Choose 1, 2 or 3"),Lilac,320,211);
-   for(int32 i=0;i<G->Choices.Num();i++){const auto& U=G->Choices[i];const float Y=246+i*86;const FLinearColor Accent=U.Rarity==ERarity::Epic?Violet:Crimson;Card(320,Y,640,74,Accent);Text(FString::Printf(TEXT("[%d] %s"),i+1,*U.Name.ToString()),Parchment,336,Y+4,.7f,true);Text(U.Description,Muted,336,Y+44);}
+   for(int32 i=0;i<G->Choices.Num();i++){const auto& U=G->Choices[i];const float Y=246+i*86;const FLinearColor Accent=U.Rarity==ERarity::Epic?Violet:Crimson;Card(320,Y,640,74,Accent);Icon(USpellPresentation::UpgradeIcon(uint8(U.Kind)),326,Y+5,64);Text(FString::Printf(TEXT("[%d] %s"),i+1,*U.Name.ToString()),Parchment,402,Y+5,.65f,true);Text(U.Description,Muted,402,Y+44);
+    const TCHAR* Rarity=U.Rarity==ERarity::Legendary?TEXT("LEGENDARY"):U.Rarity==ERarity::Epic?TEXT("EPIC"):U.Rarity==ERarity::Rare?TEXT("RARE"):TEXT("COMMON");
+    Text(FString::Printf(TEXT("%s  %d/%d"),Rarity,G->Ranks.FindRef(U.Kind),U.MaxRank),Accent,806,Y+49,.75f);}
   }else{
    Card(280,252,720,192,G->State==ERunState::Defeat?Crimson:Violet);
    Text(G->State==ERunState::Victory?TEXT("VICTORY!"):G->State==ERunState::Defeat?TEXT("DEFEAT"):TEXT("PAUSED"),Parchment,310,270,1.4f,true);
