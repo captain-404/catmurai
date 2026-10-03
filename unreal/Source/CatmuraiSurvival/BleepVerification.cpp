@@ -16,13 +16,13 @@ void ASurvivalGameMode::TickBleepReview(float Delta){
  const bool Combat=FParse::Param(FCommandLine::Get(),TEXT("CombatReview"));
  static float Age=0;static int Stage=0;static bool OK=true;
  Age+=Delta;P->Abilities->AutoAttack=false;
- auto Check=[&](bool Pass){OK&=Pass;};
+ auto Check=[&](bool Pass,const TCHAR* Name=TEXT("legacy")){OK&=Pass;UE_LOG(LogTemp,Display,TEXT("BLEEP_CHECK %s %s"),Name,Pass?TEXT("PASS"):TEXT("FAIL"));};
  if(Stage==0){
   for(auto E:EnemyPool){E->Active=false;E->SetActorHiddenInGame(true);}
   EnemyPool.Empty();
   for(int i=0;i<4;++i){auto* E=GetWorld()->SpawnActor<ASurvivalEnemy>();EnemyPool.Add(E);E->Activate(Tuning->Enemies[i%Tuning->Enemies.Num()],FVector(0,(i-1.5f)*220,55),i==3);
-   E->SetActorRotation(FRotator(0,0,0));Check(E->BleepMesh&&E->Body->GetStaticMesh()==E->BleepMesh);Check(E->Body->GetStaticMesh()&&E->Body->GetStaticMesh()->GetNumLODs()==3);
-   Check(FMath::Abs(E->Body->Bounds.Origin.Z-E->Body->Bounds.BoxExtent.Z)<3);
+   E->SetActorRotation(FRotator(0,0,0));Check(E->BleepMesh&&E->Body->GetStaticMesh()==E->BleepMesh,TEXT("mesh_available"));Check(E->Body->GetStaticMesh()&&E->Body->GetStaticMesh()->GetNumLODs()==3,TEXT("three_authored_lods"));
+   UE_LOG(LogTemp,Display,TEXT("BLEEP_GROUND index=%d bottom=%.2f lods=%d"),i,E->Body->Bounds.Origin.Z-E->Body->Bounds.BoxExtent.Z,E->Body->GetStaticMesh()->GetNumLODs());Check(FMath::Abs(E->Body->Bounds.Origin.Z-E->Body->Bounds.BoxExtent.Z)<3,TEXT("bind_pose_grounding"));
   }
   P->SetActorLocation(FVector(350,0,77));P->CameraBoom->TargetArmLength=1150;P->CameraBoom->SetRelativeRotation(FRotator(-18,180,0));P->CameraBoom->bEnableCameraLag=false;
   if(auto* PC=Cast<APlayerController>(P->GetController()))if(PC->GetHUD())PC->GetHUD()->bShowHUD=Combat;

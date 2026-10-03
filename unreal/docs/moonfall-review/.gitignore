@@ -1,0 +1,2 @@
+# Full diagnostic logs remain local; validation-results.json records the evidence.
+*.log

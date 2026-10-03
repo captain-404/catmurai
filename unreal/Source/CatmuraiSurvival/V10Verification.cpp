@@ -39,7 +39,7 @@ void ASurvivalGameMode::TickV10Verification(float Delta){
  else if(Stage==8){if(Age>.5f){P->PressJump();Next();}}
  else if(Stage==9){if(Age>.15f){P->Dash();Check(P->AirDashesUsed==1,TEXT("air_dash"));Start=P->GetActorLocation();Next();}}
  else if(Stage==10){if(Age>.1f){Check(FMath::Abs(P->GetActorLocation().Z-Start.Z)<8,TEXT("air_dash_holds_height"));P->ReleaseJump();P->PressJump();Check(P->DashTime==0&&M->Velocity.Z>900,TEXT("jump_cancels_dash"));Next();}}
- else if(Stage==11){if(Age>.65f){P->DashCooldown=0;P->Dash();Check(P->DashTime==0&&P->AirDashesUsed==1,TEXT("second_air_dash_rejected"));P->ReleaseJump();Next();}}
+ else if(Stage==11){if(Age>.15f){Check(M->IsFalling()&&P->AirDashesUsed==1,TEXT("second_air_dash_airborne_precondition"));P->DashCooldown=0;P->Dash();Check(P->DashTime==0&&P->AirDashesUsed==1,TEXT("second_air_dash_rejected"));P->ReleaseJump();Next();}}
  else if(Stage==12){if(M->IsMovingOnGround()&&Age>.3f){M->StopMovementImmediately();P->SetActorLocation(FVector(0,0,77));P->SetActorRotation(FRotator(0,135,0));P->SlashTime=0;P->Abilities->SlashRemaining=0;
    FEnemySpec Spec;Spec.Health=100;Front=GetWorld()->SpawnActor<ASurvivalEnemy>();Back=GetWorld()->SpawnActor<ASurvivalEnemy>();EnemyPool.Add(Front);EnemyPool.Add(Back);
    Front->Activate(Spec,P->GetActorLocation()+P->GetActorForwardVector()*180,false);Back->Activate(Spec,P->GetActorLocation()-P->GetActorForwardVector()*180,false);

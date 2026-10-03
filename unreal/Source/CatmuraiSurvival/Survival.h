@@ -19,6 +19,7 @@ class ASpellEffect;
 UENUM(BlueprintType) enum class ERunState : uint8 { Playing, Choosing, Paused, Victory, Defeat };
 UENUM(BlueprintType) enum class EAbilityKind : uint8 { Katana, FlyingSlash };
 UENUM(BlueprintType) enum class EUpgradeKind : uint8 { Damage, Speed, Critical, Area, Haste, Vitality, Projectiles, Knockback };
+UENUM(BlueprintType) enum class EEnemyPose : uint8 { Idle, Run, Windup, Strike, Hurt, Death };
 UENUM(BlueprintType) enum class ERarity : uint8 { Common, Rare, Epic, Legendary };
 USTRUCT(BlueprintType) struct FAbilitySpec {
  GENERATED_BODY()
@@ -134,6 +135,12 @@ UCLASS() class CATMURAISURVIVAL_API ASurvivalEnemy : public AActor {
  GENERATED_BODY()
 public:
  ASurvivalEnemy();
+ virtual void Tick(float Delta) override;
+ void AnimatePresentation(float Delta);
+ UPROPERTY(VisibleAnywhere,BlueprintReadOnly) EEnemyPose AnimationPose=EEnemyPose::Idle;
+ float AnimationClock=0,PosePhase=0,HitReaction=0,StrikeVisual=0,DeathRemaining=0;
+ bool bPursuing=false;
+ bool CanReuse() const {return !Active&&DeathRemaining<=0;}
  UPROPERTY() TObjectPtr<class UStaticMesh> BleepMesh;
  UPROPERTY(VisibleAnywhere) TObjectPtr<UStaticMeshComponent> Body;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) TObjectPtr<UHealthComponent> Health;
@@ -185,6 +192,7 @@ public:
  UPROPERTY() TArray<TObjectPtr<ASurvivalEnemy>> EnemyPool;
  UPROPERTY() TArray<TObjectPtr<AXPOrb>> OrbPool;
  TArray<FCombatNumber> Numbers;
+ bool bReviewHideHUD=false;
  TMap<EUpgradeKind,int32> Ranks;
  float DirectorBudget=0,DirectorTimer=0,AITimer=0; bool EliteSpawned=false;
  UFUNCTION(BlueprintCallable) void AddXP(int32 Amount);
@@ -193,6 +201,7 @@ public:
  UFUNCTION(BlueprintCallable) void TogglePause();
  UPROPERTY() TObjectPtr<USpellPresentation> SpellArt;
  TArray<TWeakObjectPtr<ASpellEffect>> SpellEffects;
+ void TickMoonfallReview(float Delta);
  void TickSpellReview(float Delta);
  void TickV10Verification(float Delta); void TickBleepReview(float Delta);
  void OfferUpgrades(); void BuildArena(); void EnsureDefaults(); void SpawnEnemy(bool Elite=false);

@@ -1,0 +1,2 @@
+# Ownership and review
+Root Codex: enemy animation, integration, optimization rounds3-5, verification, packaging and handoff. Shrine terrain agent: initial MoonfallArena and material draft, plus cliff/terrace refinement. Independent read-only reviewer: source and rendered evidence audit. New source archived on codex/moonfall-enemies-terrain; main unchanged. Existing player gameplay/animation, source handoffs and previous standalone build preserved.

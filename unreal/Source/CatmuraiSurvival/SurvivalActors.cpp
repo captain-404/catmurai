@@ -101,7 +101,7 @@ void UAbilityComponent::FlyingSlash(){auto* P=Cast<ACatmuraiCharacter>(GetOwner(
  for(int32 i=0;i<Count;i++){auto* B=GetWorld()->SpawnActor<ACombatProjectile>(P->GetActorLocation(),FRotator::ZeroRotator);if(B){B->Direction=Aim.RotateAngleAxis((i-(Count-1)*.5f)*12,FVector::UpVector);B->Damage=S->Damage*P->DamageMultiplier;B->Life=S->Duration;}}P->CombatCue(TEXT("FlyingSlash"),P->GetActorLocation(),false);
 }
 ASurvivalEnemy::ASurvivalEnemy(){
- PrimaryActorTick.bCanEverTick=false;
+ PrimaryActorTick.bCanEverTick=true;PrimaryActorTick.bStartWithTickEnabled=false;
  SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("EnemyRoot")));
  Body=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ReplaceableEnemy"));Body->SetupAttachment(RootComponent);
  BleepMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Characters/BleepFinal/SM_Bleep_Final.SM_Bleep_Final"));
@@ -111,6 +111,7 @@ ASurvivalEnemy::ASurvivalEnemy(){
 }
 void ASurvivalEnemy::Activate(const FEnemySpec& InSpec,FVector Location,bool IsElite){
  Spec=InSpec;Elite=IsElite;Active=true;Push=FVector::ZeroVector;AttackTimer=1;Windup=0;
+ SetActorTickInterval(0);Body->SetForcedLodModel(0);AnimationClock=0;PosePhase=FMath::FRand()*2*PI;HitReaction=0;StrikeVisual=0;DeathRemaining=0;bPursuing=false;AnimationPose=EEnemyPose::Idle;SetActorTickEnabled(true);Body->SetRelativeScale3D(FVector::OneVector);
  Health->Maximum=Health->Current=Spec.Health*(Elite?12:1);
  SetActorLocation(Location);SetActorHiddenInGame(false);
  const float VisualScale=Spec.Scale*(Elite?2.2f:1);SetActorScale3D(FVector(VisualScale));
@@ -126,7 +127,7 @@ void ASurvivalEnemy::Activate(const FEnemySpec& InSpec,FVector Location,bool IsE
  }
 }
 void ASurvivalEnemy::Simulate(float Delta,ACatmuraiCharacter* P){
- if(!Active||!P)return;
+ if(!Active||!P)return;bPursuing=false;
  AttackTimer=FMath::Max(0.f,AttackTimer-Delta);
  // Knockback must also move enemies already inside melee range.
  FVector Location=GetActorLocation()+Push*Delta;
@@ -138,20 +139,21 @@ void ASurvivalEnemy::Simulate(float Delta,ACatmuraiCharacter* P){
   // Commit to this position: leaving the warning circle makes the attack miss.
   Windup=FMath::Max(0.f,Windup-Delta);
   if(Windup<=0){
+   StrikeVisual=.18f;
    if(Distance<Reach&&FMath::Abs(Offset.Z)<160)P->ApplyIncomingHit(Spec.Damage*(Elite?2:1));
    AttackTimer=Elite?1.4f:1.1f;
   }
   return;
  }
  if(Distance<Reach&&AttackTimer<=0){Windup=Elite?.85f:Spec.Scale>1.2f?.65f:.45f;return;}
- if(Distance>85*Spec.Scale&&Push.Size2D()<60){
+ if(Distance>85*Spec.Scale&&Push.Size2D()<60){bPursuing=true;
   const FVector Direction=Offset.GetSafeNormal2D();
   const float Step=FMath::Min(Spec.Speed*Delta,FMath::Max(0.f,Distance-85*Spec.Scale));
   Location+=Direction*Step;Location.X=FMath::Clamp(Location.X,-2250.f,2250.f);Location.Y=FMath::Clamp(Location.Y,-2250.f,2250.f);
   SetActorLocation(Location);SetActorRotation(Direction.Rotation());
  }
 }
-void ASurvivalEnemy::Hit(float Damage,FVector Direction,float Force,bool Critical){if(!Active)return;auto* G=Run(this);if(!G)return;Push=Direction.GetSafeNormal2D()*Force;if(Force>0){Windup=0;AttackTimer=FMath::Max(AttackTimer,.4f);}FCombatNumber Number;Number.Position=GetActorLocation()+FVector(0,0,70);Number.Value=Damage;Number.Critical=Critical;if(G->Numbers.Num()<100)G->Numbers.Add(Number);if(auto* P=G->Player())P->CombatCue(Critical?TEXT("Critical"):TEXT("Impact"),GetActorLocation(),Critical);if(Health->Hurt(Damage)){Active=false;SetActorHiddenInGame(true);G->EnemyDefeated(this);}}
+void ASurvivalEnemy::Hit(float Damage,FVector Direction,float Force,bool Critical){if(!Active)return;auto* G=Run(this);if(!G)return;HitReaction=.18f;StrikeVisual=0;Push=Direction.GetSafeNormal2D()*Force;if(Force>0){Windup=0;AttackTimer=FMath::Max(AttackTimer,.4f);}FCombatNumber Number;Number.Position=GetActorLocation()+FVector(0,0,70);Number.Value=Damage;Number.Critical=Critical;if(G->Numbers.Num()<100)G->Numbers.Add(Number);if(auto* P=G->Player())P->CombatCue(Critical?TEXT("Critical"):TEXT("Impact"),GetActorLocation(),Critical);if(Health->Hurt(Damage)){Active=false;DeathRemaining=.32f;AnimationPose=EEnemyPose::Death;bPursuing=false;G->EnemyDefeated(this);}}
 AXPOrb::AXPOrb(){PrimaryActorTick.bCanEverTick=false;auto* Mesh=CreateDefaultSubobject<UStaticMeshComponent>(TEXT("XP"));SetRootComponent(Mesh);Mesh->SetStaticMesh(Shape(TEXT("Sphere")));Mesh->SetWorldScale3D(FVector(.18f));Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
 void AXPOrb::Activate(FVector Location,int32 InValue){Value=InValue;Active=true;Location.Z=35;SetActorLocation(Location);SetActorHiddenInGame(false);Tint(Cast<UStaticMeshComponent>(RootComponent),FLinearColor(.025,1,.4));}
 void AXPOrb::Simulate(float Delta,ACatmuraiCharacter* P){if(!Active||!P)return;const float D=FVector::Dist2D(P->GetActorLocation(),GetActorLocation());if(D<260){FVector Goal=P->GetActorLocation();Goal.Z=35;SetActorLocation(FMath::VInterpTo(GetActorLocation(),Goal,Delta,8));}if(D<70){Active=false;SetActorHiddenInGame(true);if(auto* G=Run(this))G->AddXP(Value);}}
