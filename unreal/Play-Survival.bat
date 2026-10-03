@@ -1,5 +1,6 @@
 @echo off
-set "CATMURAI_BUILD=%~dp0Builds\Moonfall\Windows\CatmuraiUnreal.exe"
+set "CATMURAI_BUILD=%~dp0Builds\MoonfallLightingFix\Windows\CatmuraiUnreal.exe"
+if not exist "%CATMURAI_BUILD%" set "CATMURAI_BUILD=%~dp0Builds\Moonfall\Windows\CatmuraiUnreal.exe"
 if not exist "%CATMURAI_BUILD%" set "CATMURAI_BUILD=%~dp0Builds\SpellArt\Windows\CatmuraiUnreal.exe"
 if exist "%CATMURAI_BUILD%" (
  start "Catmurai Survival" "%CATMURAI_BUILD%" -windowed -ResX=1280 -ResY=720

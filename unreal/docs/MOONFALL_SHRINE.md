@@ -4,7 +4,7 @@ Delivered 2026-10-03 in the canonical Unreal 5.8 project. Reference: the user's 
 
 ## Play
 
-Run `D:\YoutubeChannel\catmurai-unreal\Play-Survival.bat`. It prefers the new standalone build in `Builds/Moonfall/Windows`, retaining the previous SpellArt build as fallback. WASD move, Space jump/double jump, Shift dash, LMB slash, Q flying slash, Escape pause, 1/2/3 upgrades, R retry after defeat/victory.
+Run `D:\YoutubeChannel\catmurai-unreal\Play-Survival.bat`. It prefers the corrected standalone build in `Builds/MoonfallLightingFix/Windows`, retaining the previous SpellArt build as fallback. WASD move, Space jump/double jump, Shift dash, LMB slash, Q flying slash, Escape pause, 1/2/3 upgrades, R retry after defeat/victory.
 
 ## Implemented
 
@@ -45,3 +45,7 @@ This is a playable terrain/art prototype inspired by the concept, not a reproduc
 ## Reproduce
 
 Build `CatmuraiUnrealEditor Win64 Development`, regenerate materials with `Scripts/create_shrine_materials.py` through Unreal's Python commandlet, and run the game with `-MoonfallReview -ReviewRound=5 -windowed -ResX=1600 -ResY=900`. Logs end with `MOONFALL_ROUND_5_PASS`; screenshots are in `Saved/MoonfallReview/round-5`. Run Bleep/Combat review with rendering enabled, not NullRHI. All five round logs, original fallback evidence and final regression logs are preserved under `docs/moonfall-review`.
+
+## Lighting follow-up
+
+The reported seven unbuilt lighting objects were reproduced and fixed with explicit dynamic runtime light mobility. See `LIGHTING_FIX.md` for root cause, zero-counter validation and upgrade-screen evidence.

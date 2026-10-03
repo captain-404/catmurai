@@ -72,7 +72,7 @@ void AMoonfallArena::BuildShrine(){if(bBuilt)return;bBuilt=true;
  for(int Side=0;Side<4;++Side)for(int i=0;i<11;++i){float T=-2220+i*444.f;if(FMath::Abs(T)<450)continue;FVector P=Side<2?FVector(T,Side?2470:-2470,0):FVector(Side==2?2470:-2470,T,0);float Yaw=Side<2?0:90;
   Put(Blocks,P+FVector(0,0,75),FVector(.58,.58,1.5));Put(Beams,P+FVector(0,0,92),FVector(4.5,.16,.16),FRotator(0,Yaw,0));Put(Beams,P+FVector(0,0,150),FVector(4.5,.18,.18),FRotator(0,Yaw,0));
   if(i%3==0){Put(Blocks,P+FVector(0,0,200),FVector(.75,.75,.28));Put(LanternGlow,P+FVector(0,0,245),FVector(.46,.46,.65));Put(Roof,P+FVector(0,0,290),FVector(1,1,.16),FRotator(0,Yaw+45,0));
-   if(LightIndex<8){auto* L=NewObject<UPointLightComponent>(this);L->SetupAttachment(RootComponent);L->SetRelativeLocation(P+FVector(0,0,275));L->SetIntensity(650);L->SetAttenuationRadius(560);L->SetLightColor(FLinearColor(1,.12,.48));L->SetCastShadows(false);L->RegisterComponent();++LightIndex;}
+   if(LightIndex<8){auto* L=NewObject<UPointLightComponent>(this);L->SetupAttachment(RootComponent);L->SetMobility(EComponentMobility::Movable);L->SetRelativeLocation(P+FVector(0,0,275));L->SetIntensity(650);L->SetAttenuationRadius(560);L->SetLightColor(FLinearColor(1,.12,.48));L->SetCastShadows(false);L->RegisterComponent();++LightIndex;}
   }
  }
  SmallLightCount=LightIndex;

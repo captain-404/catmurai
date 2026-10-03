@@ -1,6 +1,9 @@
 #include "Survival.h"
 #include "MoonfallArena.h"
 #include "EngineUtils.h"
+#include "Engine/World.h"
+#include "SceneInterface.h"
+#include "Components/LightComponentBase.h"
 #include "Materials/Material.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -24,6 +27,7 @@ void ASurvivalGameMode::TickMoonfallReview(float Delta){
  auto Check=[&](bool Pass,const TCHAR* Name){OK&=Pass;UE_LOG(LogTemp,Display,TEXT("MOONFALL_CHECK %s %s"),Name,Pass?TEXT("PASS"):TEXT("FAIL"));};
  auto Shot=[&](const TCHAR* Name){IFileManager::Get().MakeDirectory(*Dir,true);FScreenshotRequest::RequestScreenshot(Dir/Name,false,false);};
  if(Stage==0){
+  PrimaryActorTick.bTickEvenWhenPaused=true;
   AMoonfallArena* Arena=nullptr;for(TActorIterator<AMoonfallArena> It(GetWorld());It;++It)Arena=*It;
   Check(Arena&&Arena->bBuilt&&Arena->InstanceComponentCount<=12&&Arena->DecorativeInstanceCount>500&&Arena->SmallLightCount<=8,TEXT("instanced_shrine_budget"));
   bool Materials=true;if(Arena){TArray<UHierarchicalInstancedStaticMeshComponent*> Meshes;Arena->GetComponents(Meshes);for(auto M:Meshes)Materials&=M->GetMaterial(0)&&M->GetMaterial(0)->GetPathName().StartsWith(TEXT("/Game/Moonfall/"))&&M->GetMaterial(0)->GetMaterial()->GetUsageByFlag(MATUSAGE_InstancedStaticMeshes);}
@@ -74,11 +78,19 @@ void ASurvivalGameMode::TickMoonfallReview(float Delta){
   if(Age>2)FrameTimes.Add(Delta*1000);PeakEffects=FMath::Max(PeakEffects,SpellEffects.Num());
   if(!Captured&&Age>6){Shot(TEXT("03-dense-combat.png"));Captured=true;}
   if(Age>10){
+   UE_LOG(LogTemp,Display,TEXT("MOONFALL_LIGHTING unbuilt_objects=%u unbuilt_reflections=%u"),GetWorld()->NumLightingUnbuiltObjects,GetWorld()->NumUnbuiltReflectionCaptures);
+   bool DynamicLights=true;int LightCount=0;for(TActorIterator<AActor> It(GetWorld());It;++It){TArray<ULightComponentBase*> Lights;It->GetComponents(Lights);for(auto L:Lights){DynamicLights&=L->Mobility==EComponentMobility::Movable;++LightCount;}}
+   Check(DynamicLights&&LightCount==11,TEXT("runtime_lights_do_not_require_baking"));
+   GetWorld()->Scene->DumpUnbuiltLightInteractions(*GLog);
+   Check(GetWorld()->NumLightingUnbuiltObjects==0&&GetWorld()->NumUnbuiltReflectionCaptures==0,TEXT("no_unbuilt_lighting_or_reflections"));
    Check(ActiveCount()==80&&State==ERunState::Playing,TEXT("80_animated_enemies"));Check(PeakEffects>0&&PeakEffects<=64,TEXT("spell_effect_budget"));Check(FrameTimes.Num()>100,TEXT("performance_samples_present"));
    FrameTimes.Sort();float Sum=0;for(float T:FrameTimes)Sum+=T;
    UE_LOG(LogTemp,Display,TEXT("MOONFALL_METRICS round=%d frames=%d mean_ms=%.2f p95_ms=%.2f peak_effects=%d enemies=%d"),Round,FrameTimes.Num(),Sum/FMath::Max(1,FrameTimes.Num()),FrameTimes.IsEmpty()?0:FrameTimes[FMath::Min(FrameTimes.Num()-1,int32(FrameTimes.Num()*.95f))],PeakEffects,ActiveCount());
-   UE_LOG(LogTemp,Display,TEXT("MOONFALL_ROUND_%d_%s"),Round,OK?TEXT("PASS"):TEXT("FAIL"));Stage=5;Age=0;P->Abilities->AutoAttack=false;P->SetActorLocation(FVector(1800,0,77));P->CameraBoom->TargetArmLength=2000;P->CameraBoom->SetRelativeRotation(FRotator(-35,-70,0));
+   Stage=5;Age=0;P->Abilities->AutoAttack=false;P->SetActorLocation(FVector(1800,0,77));P->CameraBoom->TargetArmLength=2000;P->CameraBoom->SetRelativeRotation(FRotator(-35,-70,0));
   }
  }else if(Stage==5&&Age>.5f){Shot(TEXT("04-shrine-edge.png"));Stage=6;Age=0;
- }else if(Stage==6&&Age>.5f){FPlatformMisc::RequestExitWithStatus(false,OK?0:1);}
+ }else if(Stage==6&&Age>.5f){
+  OfferUpgrades();Check(State==ERunState::Choosing&&Choices.Num()==3&&GetWorld()->NumLightingUnbuiltObjects==0,TEXT("upgrade_menu_no_lighting_warning"));Shot(TEXT("05-upgrade-lighting.png"));Stage=7;Age=0;
+ }else if(Stage==7){Choose(0);Check(State==ERunState::Playing,TEXT("upgrade_resumes_after_lighting_check"));Stage=8;Age=0;
+ }else if(Stage==8&&Age>.5f){UE_LOG(LogTemp,Display,TEXT("MOONFALL_ROUND_%d_%s"),Round,OK?TEXT("PASS"):TEXT("FAIL"));FPlatformMisc::RequestExitWithStatus(false,OK?0:1);}
 }
