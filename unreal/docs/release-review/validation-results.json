@@ -72,5 +72,6 @@
   "shipping_acceptance_bootstrap_exit": 0,
   "shipping_lighting_counters": "editor/development only; verified zero in native rounds",
   "legacy_smoke": "PASS",
-  "shipping_screenshots": 12
+  "shipping_screenshots": 12,
+  "shipping_acceptance_direct_game_exit": 0
 }

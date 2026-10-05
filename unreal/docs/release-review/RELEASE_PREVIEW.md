@@ -31,7 +31,7 @@ The round 3 failure was a verification timing assumption: an existing warning ex
 
 The legacy gameplay smoke passed (spawn, dash, delayed katana hit, projectile, death, XP pickup, upgrade selection/resume, defeat and elite victory). Native rounds directly checked zero unbuilt lighting objects and zero unbuilt reflections. Lighting diagnostics are excluded from Shipping compilation because Unreal removes those counters there.
 
-The final Shipping build/cook/archive succeeded. Its executable completed the acceptance scenarios and returned exit code 0, including all objective types, boss scheduling and health, ultimate, profile reload, purchase rejection, rewards, retry and effect/population caps. Twelve screenshots were captured from that packaged executable. Test saves use CatmuraiReleaseReviewProfile, separate from the player's CatmuraiReleaseProfile.
+The final Shipping build/cook/archive succeeded. Its executable completed the acceptance scenarios and returned exit code 0 from both the launcher and a separate direct game-executable run, including all objective types, boss scheduling and health, ultimate, profile reload, purchase rejection, rewards, retry and effect/population caps. Twelve screenshots were captured from that packaged executable. Test saves use CatmuraiReleaseReviewProfile, separate from the player's CatmuraiReleaseProfile.
 
 Performance measurements are local automated 80-enemy stress scenarios, not a minimum-hardware or whole-run guarantee. Review mode accelerates objective and boss milestones and uses damage immunity to keep the visual tests alive; these tests do not certify normal-play difficulty. The screenshots are rendered game frames, not concept mockups.
 
