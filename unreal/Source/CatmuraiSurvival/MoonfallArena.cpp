@@ -17,13 +17,14 @@ void AMoonfallArena::Put(UHierarchicalInstancedStaticMeshComponent* C,FVector P,
 void AMoonfallArena::BuildShrine(){if(bBuilt)return;bBuilt=true;
  const TCHAR* Cube=TEXT("/Engine/BasicShapes/Cube.Cube");const TCHAR* Cone=TEXT("/Engine/BasicShapes/Cone.Cone");const TCHAR* Sphere=TEXT("/Engine/BasicShapes/Sphere.Sphere");const TCHAR* Cylinder=TEXT("/Engine/BasicShapes/Cylinder.Cylinder");
  auto* Floor=Batch(TEXT("Paving"),Cube,TEXT("M_ShrineStone"),FLinearColor(.22,.17,.3));
- auto* Rock=Batch(TEXT("Basalt"),Cone,TEXT("M_Basalt"),FLinearColor(.085,.065,.14));
- auto* Blocks=Batch(TEXT("Masonry"),Cube,TEXT("M_Basalt"),FLinearColor(.085,.065,.14));
+ const TCHAR* Shard=TEXT("/Game/Release/Environment/SM_BasaltShard.SM_BasaltShard");const TCHAR* BasaltBlock=TEXT("/Game/Release/Environment/SM_BasaltBlock.SM_BasaltBlock");const TCHAR* CurvedRoof=TEXT("/Game/Release/Environment/SM_CurvedRoof.SM_CurvedRoof");const TCHAR* CherryCluster=TEXT("/Game/Release/Environment/SM_CherryCluster.SM_CherryCluster");
+ auto* Rock=Batch(TEXT("Basalt"),Shard,TEXT("M_Basalt"),FLinearColor(.085,.065,.14));
+ auto* Blocks=Batch(TEXT("Masonry"),BasaltBlock,TEXT("M_Basalt"),FLinearColor(.085,.065,.14));
  auto* Wood=Batch(TEXT("Vermilion"),Cylinder,TEXT("M_Vermilion"),FLinearColor(.36,.025,.05));
  auto* Beams=Batch(TEXT("RailBeams"),Cube,TEXT("M_Vermilion"),FLinearColor(.36,.025,.05));
- auto* Roof=Batch(TEXT("RoofTiles"),Cube,TEXT("M_Roof"),FLinearColor(.045,.055,.095));
+ auto* Roof=Batch(TEXT("RoofTiles"),CurvedRoof,TEXT("M_Roof"),FLinearColor(.045,.055,.095));
  auto* Trunk=Batch(TEXT("CherryBranches"),Cylinder,TEXT("M_Bark"),FLinearColor(.1,.045,.075));
- auto* Leaves=Batch(TEXT("CherryCanopies"),Sphere,TEXT("M_Cherry"),FLinearColor(.48,.1,.45),false);
+ auto* Leaves=Batch(TEXT("CherryCanopies"),CherryCluster,TEXT("M_Cherry"),FLinearColor(.48,.1,.45),false);
  auto* Glow=Batch(TEXT("MoonRunes"),Cube,TEXT("M_MoonGlow"),FLinearColor(.48,.12,1),false);
  auto* LanternGlow=Batch(TEXT("LanternGlow"),Sphere,TEXT("M_LanternGlow"),FLinearColor(1,.06,.4),false);
  auto* Water=Batch(TEXT("SpiritFalls"),Cylinder,TEXT("M_SpiritWater"),FLinearColor(.2,.14,.65),false);
@@ -86,6 +87,9 @@ void AMoonfallArena::BuildShrine(){if(bBuilt)return;bBuilt=true;
  // Long spirit falls and low mist banks establish depth without any translucent overdraw.
  for(int i=0;i<8;++i){float A=(i+.5f)*PI/4;FVector P(FMath::Cos(A)*2760,FMath::Sin(A)*2760,-900);Put(Water,P,FVector(.5,.65,17),FRotator(0,i*45,0));Put(Halo,P-FVector(0,0,320),FVector(8,8,2));}
  for(int i=0;i<22;++i){float A=Random.FRandRange(0,2*PI);float R=Random.FRandRange(3450,4300);Put(Rock,FVector(FMath::Cos(A)*R,FMath::Sin(A)*R,Random.FRandRange(-850,-200)),FVector(1.5,1.4,Random.FRandRange(3,6)),FRotator(180,i*37,0));}
+ // Low ruins and petal beds mark courtyard quarters without hiding enemies or changing the combat floor.
+ const FVector Gardens[]={FVector(-1600,900,0),FVector(1500,1000,0),FVector(400,-1700,0),FVector(-1550,-1450,0)};
+ for(auto Site:Gardens){for(int i=0;i<9;++i){const float A=i*2*PI/9;Put(Blocks,Site+FVector(cosf(A)*140,sinf(A)*140,12),FVector(.6,.7,.22),FRotator(0,i*41,0));Put(Leaves,Site+FVector(cosf(A)*85,sinf(A)*85,18),FVector(.35,.3,.09),FRotator(0,i*61,0));}Put(Rock,Site+FVector(0,0,22),FVector(.5,.5,.44),FRotator(0,44,0));}
  for(auto C:Batches)C->BuildTreeIfOutdated(false,true);
  UE_LOG(LogTemp,Display,TEXT("MOONFALL_ARENA_READY: batches=%d instances=%d lights=%d walkable=+/-%.0f floor=0"),InstanceComponentCount,DecorativeInstanceCount,SmallLightCount,WalkableHalfExtent);
 }

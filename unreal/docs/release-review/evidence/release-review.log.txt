@@ -1,0 +1,23 @@
+[2026.10.05-10.55.25:629][316]LogTemp: Display: RELEASE_CHECK title_art_and_navigation PASS
+[2026.10.05-10.55.26:631][443]LogTemp: Display: RELEASE_CHECK options_save PASS
+[2026.10.05-10.55.27:634][692]LogTemp: Display: RELEASE_CHECK armory_purchase PASS
+[2026.10.05-10.55.28:646][924]LogTemp: Display: RELEASE_CHECK ember_loadout PASS
+[2026.10.05-10.55.30:651][332]LogTemp: Display: RELEASE_CHECK ember_status PASS
+[2026.10.05-10.55.30:652][332]LogTemp: Display: RELEASE_CHECK element_pair_synergy PASS
+[2026.10.05-10.55.30:653][332]LogTemp: Display: RELEASE_CHECK ultimate_damage_and_charge PASS
+[2026.10.05-10.55.32:660][714]LogTemp: Display: RELEASE_CHECK upgrade_choice PASS
+[2026.10.05-10.55.32:661][714]LogTemp: Display: RELEASE_CHECK upgrade_resumes PASS
+[2026.10.05-10.55.32:662][714]LogTemp: Display: RELEASE_CHECK objective_reward PASS
+[2026.10.05-10.55.33:663][898]LogTemp: Display: RELEASE_CHECK first_boss_scheduled PASS
+[2026.10.05-10.55.35:664][287]LogTemp: Display: RELEASE_CHECK first_boss_health PASS
+[2026.10.05-10.55.35:665][287]LogTemp: Display: RELEASE_CHECK mini_boss_continues_run PASS
+[2026.10.05-10.55.35:665][287]LogTemp: Display: RELEASE_CHECK second_boss_scheduled PASS
+[2026.10.05-10.55.35:665][287]LogTemp: Display: RELEASE_CHECK second_boss_health PASS
+[2026.10.05-10.55.35:666][287]LogTemp: Display: RELEASE_CHECK final_boss_scheduled PASS
+[2026.10.05-10.55.37:669][678]LogTemp: Display: RELEASE_CHECK final_boss_health PASS
+[2026.10.05-10.55.37:671][678]LogTemp: Display: RELEASE_CHECK victory_and_saved_reward PASS
+[2026.10.05-10.55.37:671][678]LogTemp: Display: RELEASE_CHECK terminal_reward_once PASS
+[2026.10.05-10.55.48:683][415]LogTemp: Display: RELEASE_CHECK population_and_effect_caps PASS
+[2026.10.05-10.55.48:683][415]LogTemp: Display: RELEASE_CHECK lighting_and_reflections_built PASS
+[2026.10.05-10.55.48:684][415]LogTemp: Display: RELEASE_METRICS frames=1237 mean_ms=6.47 p95_ms=7.55
+[2026.10.05-10.55.49:688][555]LogTemp: Display: CATMURAI_RELEASE_PASS

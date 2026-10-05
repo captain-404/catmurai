@@ -18,6 +18,7 @@
 #include "HAL/PlatformMisc.h"
 
 void ASurvivalGameMode::TickMoonfallReview(float Delta){
+#if !UE_BUILD_SHIPPING
  auto* P=Player();if(!P)return;
  static float Age=0;static int Stage=0;static bool OK=true;
  static TArray<float> FrameTimes;static int PeakEffects=0;static bool Captured=false;
@@ -93,4 +94,5 @@ void ASurvivalGameMode::TickMoonfallReview(float Delta){
   OfferUpgrades();Check(State==ERunState::Choosing&&Choices.Num()==3&&GetWorld()->NumLightingUnbuiltObjects==0,TEXT("upgrade_menu_no_lighting_warning"));Shot(TEXT("05-upgrade-lighting.png"));Stage=7;Age=0;
  }else if(Stage==7){Choose(0);Check(State==ERunState::Playing,TEXT("upgrade_resumes_after_lighting_check"));Stage=8;Age=0;
  }else if(Stage==8&&Age>.5f){UE_LOG(LogTemp,Display,TEXT("MOONFALL_ROUND_%d_%s"),Round,OK?TEXT("PASS"):TEXT("FAIL"));FPlatformMisc::RequestExitWithStatus(false,OK?0:1);}
+#endif
 }

@@ -1,0 +1,4 @@
+# Release development ownership - 2026-10-05
+Root: Survival.h contracts, SurvivalRun integration, presentation/world polish, original art/audio/import, review capture, packaging and verification. Combat agent: ReleaseCombat files, SurvivalActors.cpp and EnemyAnimation.cpp only. Frontend agent: ReleaseFrontend files (custom controller, save/settings/armory, HUD) only. Director agent: ReleaseRun files (objectives, shrine rewards, boss/wave scheduling) only. Independent combined audit follows implementation. Single-player release prioritized by user. Existing handoffs/previous packaged game preserved.
+
+Integration complete: all owned subsystems are integrated, native checks and Shipping acceptance passed; source branch codex/single-player-release. See RELEASE_PREVIEW.md for evidence and remaining release gates.

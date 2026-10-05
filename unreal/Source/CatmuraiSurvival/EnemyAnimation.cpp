@@ -1,4 +1,5 @@
 #include "Survival.h"
+#include "ReleaseCombat.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -17,6 +18,8 @@ void ASurvivalEnemy::Tick(float Delta){
 
 void ASurvivalEnemy::AnimatePresentation(float Delta){
  if(!Active&&DeathRemaining<=0){SetActorHiddenInGame(true);SetActorTickEnabled(false);return;}
+ auto* RunG=Cast<ASurvivalGameMode>(UGameplayStatics::GetGameMode(this));
+ const bool Frozen=FrostRemaining>(RunG&&RunG->Combat&&RunG->Combat->FrostRank>=3?3.4f:2.65f);
  AnimationClock+=Delta;
  HitReaction=FMath::Max(0.f,HitReaction-Delta);StrikeVisual=FMath::Max(0.f,StrikeVisual-Delta);
  const float ActorScale=FMath::Max(.01f,GetActorScale3D().Z);
@@ -28,19 +31,21 @@ void ASurvivalEnemy::AnimatePresentation(float Delta){
   Scale=FVector(Shrink*(1+.3f*T),Shrink*(1+.3f*T),Shrink);
   Offset.Z+=FMath::Sin(T*PI)*28/ActorScale;Roll=T*65;
   if(DeathRemaining<=0){SetActorHiddenInGame(true);SetActorTickEnabled(false);}
+ }else if(Frozen&&!Elite){
+  AnimationPose=EEnemyPose::Idle;Scale=FVector(1.05f,1.05f,.9f);Lean=-5;
  }else if(HitReaction>0){
   AnimationPose=EEnemyPose::Hurt;const float T=HitReaction/.18f;
   Scale=FVector(1+.12f*T,1+.12f*T,1-.17f*T);Lean=-16*T;
   Offset.Y=FMath::Sin(AnimationClock*70)*5*T/ActorScale;
  }else if(Windup>0){
-  AnimationPose=EEnemyPose::Windup;const float Duration=Elite?.85f:Spec.Scale>1.2f?.65f:.45f;
+  AnimationPose=EEnemyPose::Windup;const float Duration=Spec.Archetype==EEnemyArchetype::Shaman?(Elite?.95f:.85f):Elite?.85f:Spec.Archetype==EEnemyArchetype::Brute?.75f:Spec.Scale>1.2f?.65f:Spec.Archetype==EEnemyArchetype::Runner?.35f:.45f;
   const float T=1-FMath::Clamp(Windup/Duration,0.f,1.f);
   Scale=FVector(1+.15f*T,1+.15f*T,1-.22f*T);Lean=-12*T;
  }else if(StrikeVisual>0){
   AnimationPose=EEnemyPose::Strike;const float T=StrikeVisual/.18f;
   Offset.X=FMath::Sin(T*PI)*36/ActorScale;Scale=FVector(.92f,.92f,1.12f);Lean=20*T;
  }else if(bPursuing){
-  AnimationPose=EEnemyPose::Run;const float Phase=AnimationClock*(Spec.Speed/170.f)*10+PosePhase;
+  AnimationPose=EEnemyPose::Run;const float Phase=AnimationClock*(Spec.Speed/170.f)*(FrostRemaining>0?.5f:1.f)*10+PosePhase;
   const float Step=FMath::Abs(FMath::Sin(Phase));Offset.Z+=Step*(Elite?8:12)/ActorScale;
   const float Squash=FMath::Sin(Phase*2)*.045f;
   Scale=FVector(1-Squash*.5f,1-Squash*.5f,1+Squash);Lean=8;Roll=FMath::Sin(Phase)*4;

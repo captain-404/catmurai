@@ -1,4 +1,5 @@
 #include "SpellPresentation.h"
+#include "ReleaseAudio.h"
 #include "Survival.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/Texture2D.h"
@@ -46,6 +47,7 @@ void ASpellEffect::Tick(float Delta){
 }
 
 void ACatmuraiCharacter::CombatCue_Implementation(FName Cue,FVector Location,bool Critical){
+ FName Sound=NAME_None;if(Cue==TEXT("Katana"))Sound=TEXT("Slash");else if(Cue==TEXT("Hurt"))Sound=TEXT("Hurt");else if(Cue==TEXT("Dash"))Sound=TEXT("Dash");else if(Cue==TEXT("Impact")||Cue==TEXT("Critical"))Sound=TEXT("Impact");else if(Cue==TEXT("Defeat"))Sound=TEXT("Defeat");else if(Cue==TEXT("LevelUp"))Sound=TEXT("Upgrade");else if(Cue==TEXT("Pickup"))Sound=TEXT("Pickup");else if(Cue==TEXT("Victory"))Sound=TEXT("Victory");if(!Sound.IsNone())FReleaseAudio::PlayCue(this,Sound);
  const float Yaw=GetActorRotation().Yaw;
  if(Cue==TEXT("Katana"))ASpellEffect::Spawn(this,TEXT("spell_phantom_claw_rend"),Location+GetActorForwardVector()*120+FVector(0,0,-25),300*AreaMultiplier,.24f,Yaw,240);
  else if(Cue==TEXT("Dash"))ASpellEffect::Spawn(this,TEXT("spell_frost_dash"),Location-FVector(0,0,35),200,.28f,Yaw,0,.65f);

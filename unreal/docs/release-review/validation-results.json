@@ -1,0 +1,76 @@
+{
+  "native_rounds": [
+    {
+      "round": 1,
+      "checks": 21,
+      "failed": [],
+      "metrics": [
+        "1237",
+        "6.47",
+        "7.55"
+      ],
+      "result": "PASS"
+    },
+    {
+      "round": 2,
+      "checks": 21,
+      "failed": [],
+      "metrics": [
+        "1236",
+        "6.48",
+        "7.55"
+      ],
+      "result": "PASS"
+    },
+    {
+      "round": 3,
+      "checks": 31,
+      "failed": [
+        "boss_telegraph_queued"
+      ],
+      "metrics": [
+        "1199",
+        "6.68",
+        "8.23"
+      ],
+      "result": "FAIL"
+    },
+    {
+      "round": 4,
+      "checks": 31,
+      "failed": [],
+      "metrics": [
+        "1228",
+        "6.52",
+        "7.42"
+      ],
+      "result": "PASS"
+    },
+    {
+      "round": 5,
+      "checks": 31,
+      "failed": [],
+      "metrics": [
+        "976",
+        "8.21",
+        "9.58"
+      ],
+      "result": "PASS"
+    },
+    {
+      "round": 6,
+      "checks": 31,
+      "failed": [],
+      "metrics": [
+        "1050",
+        "7.62",
+        "8.32"
+      ],
+      "result": "PASS"
+    }
+  ],
+  "shipping_acceptance_bootstrap_exit": 0,
+  "shipping_lighting_counters": "editor/development only; verified zero in native rounds",
+  "legacy_smoke": "PASS",
+  "shipping_screenshots": 12
+}

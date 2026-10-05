@@ -15,10 +15,13 @@ class AXPOrb;
 class ACatmuraiCharacter;
 class USpellPresentation;
 class ASpellEffect;
+class UReleaseCombatComponent;
+class UReleaseRunComponent;
 
-UENUM(BlueprintType) enum class ERunState : uint8 { Playing, Choosing, Paused, Victory, Defeat };
+UENUM(BlueprintType) enum class ERunState : uint8 { Playing, Choosing, Paused, Victory, Defeat, Title, Settings, Armory };
 UENUM(BlueprintType) enum class EAbilityKind : uint8 { Katana, FlyingSlash };
-UENUM(BlueprintType) enum class EUpgradeKind : uint8 { Damage, Speed, Critical, Area, Haste, Vitality, Projectiles, Knockback };
+UENUM(BlueprintType) enum class EUpgradeKind : uint8 { Damage, Speed, Critical, Area, Haste, Vitality, Projectiles, Knockback, Ember, Frost, Storm, Orbit, Siphon, Fortune };
+UENUM(BlueprintType) enum class EEnemyArchetype : uint8 { Chaser, Runner, Brute, Shaman };
 UENUM(BlueprintType) enum class EEnemyPose : uint8 { Idle, Run, Windup, Strike, Hurt, Death };
 UENUM(BlueprintType) enum class ERarity : uint8 { Common, Rare, Epic, Legendary };
 USTRUCT(BlueprintType) struct FAbilitySpec {
@@ -34,6 +37,7 @@ USTRUCT(BlueprintType) struct FAbilitySpec {
 USTRUCT(BlueprintType) struct FEnemySpec {
  GENERATED_BODY()
  UPROPERTY(EditAnywhere,BlueprintReadWrite) FName Name="Ronin Rat";
+ UPROPERTY(EditAnywhere,BlueprintReadWrite) EEnemyArchetype Archetype=EEnemyArchetype::Chaser;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) float Health=45;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) float Speed=170;
  UPROPERTY(EditAnywhere,BlueprintReadWrite) float Damage=9;
@@ -147,6 +151,7 @@ public:
  UPROPERTY(EditAnywhere,BlueprintReadWrite) FEnemySpec Spec;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool Active=false;
  UPROPERTY(VisibleAnywhere,BlueprintReadOnly) bool Elite=false;
+ float FrostRemaining=0,BurnRemaining=0,BurnTickTimer=0,BurnDamage=0;int32 ShockStacks=0;
  FVector Push; float AttackTimer=0,Windup=0;
  void Activate(const FEnemySpec& InSpec,FVector Location,bool IsElite);
  void Simulate(float Delta,ACatmuraiCharacter* Player);
@@ -201,6 +206,10 @@ public:
  UFUNCTION(BlueprintCallable) void TogglePause();
  UPROPERTY() TObjectPtr<USpellPresentation> SpellArt;
  TArray<TWeakObjectPtr<ASpellEffect>> SpellEffects;
+ UPROPERTY(VisibleAnywhere) TObjectPtr<UReleaseCombatComponent> Combat;
+ UPROPERTY(VisibleAnywhere) TObjectPtr<UReleaseRunComponent> RunDirector;
+ bool bTerminalRecorded=false;
+ void StartReleaseRun(int32 Loadout=0);void ReturnToTitle();void TickReleaseReview(float Delta);
  void TickMoonfallReview(float Delta);
  void TickSpellReview(float Delta);
  void TickV10Verification(float Delta); void TickBleepReview(float Delta);

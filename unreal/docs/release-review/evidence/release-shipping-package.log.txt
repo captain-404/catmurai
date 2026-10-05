@@ -1,0 +1,2 @@
+BUILD SUCCESSFUL
+AutomationTool exiting with ExitCode=0 (Success)
